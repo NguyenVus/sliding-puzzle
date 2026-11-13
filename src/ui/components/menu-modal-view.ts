@@ -46,8 +46,8 @@ export class MenuModalView {
         </header>
 
         <nav class="main-menu-nav" aria-label="Menu chính">
-          <button type="button" id="menu-btn-campaign" class="menu-item-btn btn-primary-gradient">
-            <span class="menu-item-icon">${renderIcon('levels', { size: 22 })}</span>
+          <button type="button" id="menu-btn-campaign" class="menu-item-btn">
+            <span class="menu-item-icon">${renderIcon('trophy', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Chơi theo màn</span>
               <span class="menu-item-desc">30 cấp độ từ 3×3 đến 8×8 thử thách</span>

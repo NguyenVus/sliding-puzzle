@@ -645,6 +645,10 @@ body {
   transition: transform 120ms ease, stroke 150ms ease;
 }
 
+.icon-gold {
+  color: #f59e0b;
+}
+
 .btn-icon {
   display: inline-flex;
   align-items: center;
@@ -3035,7 +3039,7 @@ body[data-animations="false"] *::after {
   justify-content: center;
   font-size: 1.6rem;
   line-height: 1;
-  color: var(--wood-gold-light);
+  color: currentColor;
   flex-shrink: 0;
 }
 
@@ -3130,12 +3134,8 @@ body[data-animations="false"] *::after {
   justify-content: center;
   font-size: 1.6rem;
   line-height: 1;
-  color: var(--wood-gold-light);
+  color: currentColor;
   flex-shrink: 0;
-}
-
-.menu-item-btn.btn-primary-gradient .menu-item-icon {
-  color: #ffffff;
 }
 
 .menu-item-content {
@@ -3205,7 +3205,7 @@ body[data-animations="false"] *::after {
   justify-content: center;
   font-size: 1.4rem;
   line-height: 1;
-  color: var(--wood-gold-light);
+  color: currentColor;
   flex-shrink: 0;
 }
 

@@ -53,6 +53,28 @@ describe('UI Modals Suite', () => {
       expect(menu.isOpen()).toBe(false);
       expect(onClose).toHaveBeenCalled();
     });
+
+    it('ensures campaign menu item icon inherits currentColor and does not have white override', () => {
+      const menu = new MenuModalView(container, {
+        onSelectCampaign: vi.fn(),
+        onSelectFreePlay: vi.fn(),
+        onSelectPictureMode: vi.fn(),
+        onOpenSettings: vi.fn(),
+        onOpenHowToPlay: vi.fn(),
+      });
+      menu.show();
+
+      const campaignBtn = container.querySelector<HTMLButtonElement>('#menu-btn-campaign');
+      expect(campaignBtn).not.toBeNull();
+      expect(campaignBtn?.classList.contains('btn-primary-gradient')).toBe(false);
+
+      const trophyIcon = campaignBtn?.querySelector('.menu-item-icon .game-icon');
+      expect(trophyIcon).not.toBeNull();
+      expect(trophyIcon?.getAttribute('stroke')).toBe('currentColor');
+      expect(trophyIcon?.classList.contains('icon-trophy')).toBe(true);
+
+      menu.close();
+    });
   });
 
   describe('SettingsModalView', () => {

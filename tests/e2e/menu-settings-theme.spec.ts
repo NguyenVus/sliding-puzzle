@@ -21,6 +21,13 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
     await expect(menuModal).toContainText('Cài đặt');
     await expect(menuModal).toContainText('Hướng dẫn luật chơi');
 
+    // Trophy icon in "Chơi theo màn" must NOT be white (#ffffff) on light cream button
+    const trophyIcon = page.locator('#menu-btn-campaign .menu-item-icon .game-icon');
+    await expect(trophyIcon).toBeVisible();
+    const trophyColor = await trophyIcon.evaluate((el) => window.getComputedStyle(el).color);
+    expect(trophyColor).not.toBe('rgb(255, 255, 255)');
+    expect(trophyColor).toBe('rgb(61, 21, 4)'); // Matches theme text #3d1504
+
     // 3. Click How-To-Play
     await page.locator('#menu-btn-howtoplay').click();
     await expect(menuModal).not.toBeVisible();

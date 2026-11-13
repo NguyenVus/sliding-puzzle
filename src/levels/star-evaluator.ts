@@ -9,13 +9,16 @@ import type { LevelConfig, StarEvaluation, StarRating } from './types';
 export function evaluateStars(
   moves: number,
   timeSec: number,
-  config: LevelConfig
+  config: LevelConfig,
+  hasUsedHint: boolean = false
 ): StarEvaluation {
   const achievedMovesPar = moves <= config.parMoves;
   const achievedTimePar = timeSec <= config.targetTimeSec;
 
   let stars: StarRating;
-  if (achievedMovesPar && achievedTimePar) {
+  if (hasUsedHint) {
+    stars = 1;
+  } else if (achievedMovesPar && achievedTimePar) {
     stars = 3;
   } else if (moves <= Math.round(config.parMoves * 1.5)) {
     stars = 2;
@@ -29,5 +32,6 @@ export function evaluateStars(
     timeParSec: config.targetTimeSec,
     achievedMovesPar,
     achievedTimePar,
+    hasUsedHint,
   };
 }

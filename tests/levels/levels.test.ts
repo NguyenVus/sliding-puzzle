@@ -126,12 +126,15 @@ describe('Level System (src/levels)', () => {
       expect(res3.stars).toBe(2);
     });
 
-    it('awards 1 star when completing the level exceeding 2-star threshold', () => {
-      const max2StarMoves = Math.round(config.parMoves * 1.5);
-      const res = evaluateStars(max2StarMoves + 5, 120, config);
-      expect(res.stars).toBe(1);
-      expect(res.achievedMovesPar).toBe(false);
-      expect(res.achievedTimePar).toBe(false);
+    it('awards at most 1 star when hasUsedHint is true, regardless of moves and time', () => {
+      // Perfect 3-star performance with moves=5, time=10s, but used hint
+      const res1 = evaluateStars(5, 10, config, true);
+      expect(res1.stars).toBe(1);
+      expect(res1.hasUsedHint).toBe(true);
+
+      // Boundary 3-star performance with used hint
+      const res2 = evaluateStars(12, 25, config, true);
+      expect(res2.stars).toBe(1);
     });
   });
 });

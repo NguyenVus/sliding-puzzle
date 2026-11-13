@@ -218,4 +218,61 @@ describe('GameController', () => {
     expect(resumingController.getCurrentLevel()).toBe(3);
     resumingController.destroy();
   });
+
+  describe('Hints and Auto-Solve Features (Phase 4)', () => {
+    it('requests a hint, highlights the target tile, and marks hasUsedHint', async () => {
+      expect(controller.getHasUsedHint()).toBe(false);
+
+      const hintIndex = await controller.requestHint();
+      expect(hintIndex).not.toBeNull();
+      expect(controller.getHasUsedHint()).toBe(true);
+
+      // Verify that the tile element has the .hint-glow class
+      const glowingTile = boardContainer.querySelector('.wood-tile.hint-glow');
+      expect(glowingTile).not.toBeNull();
+
+      // Making a move should clear the hint glow
+      controller.makeMove(hintIndex!);
+      expect(boardContainer.querySelector('.wood-tile.hint-glow')).toBeNull();
+    });
+
+    it('limits stars to maximum 1 when a hint has been used on a level', async () => {
+      controller.loadLevel(1);
+      // Use hint
+      await controller.requestHint();
+      expect(controller.getHasUsedHint()).toBe(true);
+
+      // Finish the level with 0 moves / under par
+      controller.forceSolvedStateForTesting();
+
+      // Check stars awarded
+      const storage = controller.getStorageManager();
+      const rec = storage.getLevelRecord(1);
+      expect(rec.stars).toBe(1); // Penalized to 1 star!
+    });
+
+    it('triggers hint when H keyboard key is pressed', async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'h' }));
+      // Wait for promise resolution
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(controller.getHasUsedHint()).toBe(true);
+      expect(boardContainer.querySelector('.wood-tile.hint-glow')).not.toBeNull();
+    });
+
+    it('toggles auto-solve and stops on user interaction or stop command', async () => {
+      expect(controller.getIsAutoSolving()).toBe(false);
+
+      // Start auto-solve
+      const autoSolvePromise = controller.toggleAutoSolve();
+      expect(controller.getIsAutoSolving()).toBe(true);
+      expect(controller.getHasUsedHint()).toBe(true);
+
+      // Stop auto-solve
+      controller.stopAutoSolve();
+      expect(controller.getIsAutoSolving()).toBe(false);
+
+      await autoSolvePromise;
+    });
+  });
 });

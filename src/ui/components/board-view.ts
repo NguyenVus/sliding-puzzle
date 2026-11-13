@@ -23,6 +23,7 @@ export class BoardView {
   };
   private onTileClick?: (index: number, tileValue: number) => void;
   private lastHandledActionTime = 0;
+  private hintedIndex: number | null = null;
 
   constructor(container: HTMLElement, options: BoardViewOptions = {}) {
     this.container = container;
@@ -150,6 +151,12 @@ export class BoardView {
         tileEl.setAttribute('aria-disabled', 'true');
       }
 
+      if (this.hintedIndex === index) {
+        tileEl.classList.add('hint-glow');
+      } else {
+        tileEl.classList.remove('hint-glow');
+      }
+
       if (!animate) {
         tileEl.style.transition = 'none';
         tileEl.style.transform = `translate3d(${x}px, ${y}px, 0)`;
@@ -224,5 +231,28 @@ export class BoardView {
 
   public getBlankIndex(): number {
     return this.currentBoard ? getBlankIndex(this.currentBoard) : -1;
+  }
+
+  /**
+   * Highlights the tile at `index` with an animated pulsing glow to indicate a hint.
+   * If null, clears any current hint.
+   */
+  public setHintTile(index: number | null): void {
+    if (this.hintedIndex !== null) {
+      const prevEl = this.getTileElementByIndex(this.hintedIndex);
+      prevEl?.classList.remove('hint-glow');
+    }
+    this.hintedIndex = index;
+    if (index !== null) {
+      const nextEl = this.getTileElementByIndex(index);
+      nextEl?.classList.add('hint-glow');
+    }
+  }
+
+  /**
+   * Clears the hint highlight.
+   */
+  public clearHint(): void {
+    this.setHintTile(null);
   }
 }

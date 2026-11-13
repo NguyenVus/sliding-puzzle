@@ -16,4 +16,5 @@ export interface StarEvaluation {
   timeParSec: number;
   achievedMovesPar: boolean;
   achievedTimePar: boolean;
+  hasUsedHint?: boolean;
 }

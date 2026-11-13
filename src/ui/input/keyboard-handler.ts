@@ -4,6 +4,7 @@ export interface KeyboardHandlerOptions {
   onDirectionMove: (direction: SwipeDirection) => void;
   onUndo: () => void;
   onRestart: () => void;
+  onHint?: () => void;
   onEscape?: () => void;
 }
 
@@ -74,6 +75,13 @@ export class KeyboardHandler {
     if (key === 'r') {
       e.preventDefault();
       this.options.onRestart();
+      return;
+    }
+
+    // Hint: H
+    if (key === 'h') {
+      e.preventDefault();
+      this.options.onHint?.();
       return;
     }
 

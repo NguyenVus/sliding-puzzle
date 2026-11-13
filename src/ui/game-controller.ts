@@ -18,6 +18,7 @@ import { KeyboardHandler } from './input/keyboard-handler';
 import { getLevel, createLevelBoard } from '../levels/level-manager';
 import { evaluateStars } from '../levels/star-evaluator';
 import { StorageManager, defaultStorage } from '../storage/storage-manager';
+import { SolverClient, defaultSolverClient } from '../solver';
 
 export type GameStatus = 'ready' | 'playing' | 'won';
 
@@ -30,6 +31,7 @@ export interface GameControllerElements {
 
 export interface GameControllerOptions {
   storageManager?: StorageManager;
+  solverClient?: SolverClient;
   initialMode?: GameMode;
   initialLevel?: number;
   initialSize?: number;
@@ -38,6 +40,7 @@ export interface GameControllerOptions {
 export class GameController {
   private readonly elements: GameControllerElements;
   private readonly storageManager: StorageManager;
+  private readonly solverClient: SolverClient;
   private layoutManager!: LayoutManager;
   private boardView!: BoardView;
   private hudView!: HudView;
@@ -57,6 +60,10 @@ export class GameController {
   private timerIntervalId: number | null = null;
   private timerStartTime = 0;
   private status: GameStatus = 'ready';
+  private hasUsedHint = false;
+  private isAutoSolving = false;
+  private autoSolveTimerId: number | null = null;
+  private autoSolveMoves: number[] = [];
 
   constructor(
     elements: GameControllerElements,
@@ -64,6 +71,7 @@ export class GameController {
   ) {
     this.elements = elements;
     this.storageManager = options.storageManager ?? defaultStorage;
+    this.solverClient = options.solverClient ?? defaultSolverClient;
     this.mode = options.initialMode ?? 'campaign';
     const savedData = this.storageManager.load();
     this.currentLevelId =
@@ -90,6 +98,9 @@ export class GameController {
 
     this.boardView = new BoardView(this.elements.boardContainer, {
       onTileClick: (index) => {
+        if (this.isAutoSolving) {
+          this.stopAutoSolve();
+        }
         this.makeMove(index);
       },
     });
@@ -103,6 +114,12 @@ export class GameController {
         onUndo: () => this.undo(),
         onRestart: () => this.restartGame(),
         onScramble: () => this.startNewGame(),
+        onHint: () => {
+          void this.requestHint();
+        },
+        onAutoSolve: () => {
+          void this.toggleAutoSolve();
+        },
         onSizeChange: (size) => this.changeSize(size),
         onOpenLevelSelect: () => this.openLevelSelect(),
         onSwitchMode: (nextMode) => this.setMode(nextMode),
@@ -133,10 +150,16 @@ export class GameController {
       getTileSize: () => this.layoutManager.getMetrics().tileSize,
       getGridSize: () => this.size,
       onTap: (index) => {
+        if (this.isAutoSolving) {
+          this.stopAutoSolve();
+        }
         this.boardView.notifyActionHandled();
         this.makeMove(index);
       },
       onSwipe: (direction, startIndex) => {
+        if (this.isAutoSolving) {
+          this.stopAutoSolve();
+        }
         this.boardView.notifyActionHandled();
         this.handleSwipe(direction, startIndex);
       },
@@ -144,10 +167,16 @@ export class GameController {
 
     this.keyboardHandler = new KeyboardHandler({
       onDirectionMove: (direction) => {
+        if (this.isAutoSolving) {
+          this.stopAutoSolve();
+        }
         this.makeDirectionalMove(direction);
       },
       onUndo: () => this.undo(),
       onRestart: () => this.restartGame(),
+      onHint: () => {
+        void this.requestHint();
+      },
       onEscape: () => {
         if (this.modalView.isOpen()) {
           this.modalView.close();
@@ -179,6 +208,10 @@ export class GameController {
     this.currentLevelId = levelId;
     this.size = config.size;
 
+    this.stopAutoSolve();
+    this.hasUsedHint = false;
+    this.boardView.clearHint();
+
     this.layoutManager.setGridSize(this.size);
     this.hudView.setMode('campaign', config);
 
@@ -208,6 +241,10 @@ export class GameController {
     const validSize = Math.max(3, Math.min(8, size));
     this.mode = 'freeplay';
     this.size = validSize;
+
+    this.stopAutoSolve();
+    this.hasUsedHint = false;
+    this.boardView.clearHint();
 
     this.layoutManager.setGridSize(this.size);
     this.hudView.setMode('freeplay', undefined, this.size);
@@ -260,6 +297,10 @@ export class GameController {
     if (this.levelSelectView && this.levelSelectView.isOpen()) {
       return;
     }
+    this.stopAutoSolve();
+    this.hasUsedHint = false;
+    this.boardView.clearHint();
+
     this.stopTimer();
     this.elapsedSeconds = 0;
     this.moves = 0;
@@ -355,6 +396,7 @@ export class GameController {
     this.history.push(this.board);
     this.board = nextBoard;
     this.moves += 1;
+    this.boardView.clearHint();
 
     // Animate move
     this.boardView.render(this.board, { animate: true });
@@ -482,6 +524,8 @@ export class GameController {
   private handleVictory(): void {
     this.status = 'won';
     this.stopTimer();
+    this.stopAutoSolve();
+    this.boardView.clearHint();
 
     const mins = Math.floor(this.elapsedSeconds / 60);
     const secs = this.elapsedSeconds % 60;
@@ -489,7 +533,12 @@ export class GameController {
 
     if (this.mode === 'campaign') {
       const config = getLevel(this.currentLevelId)!;
-      const evalResult = evaluateStars(this.moves, this.elapsedSeconds, config);
+      const evalResult = evaluateStars(
+        this.moves,
+        this.elapsedSeconds,
+        config,
+        this.hasUsedHint
+      );
       const saveResult = this.storageManager.recordLevelVictory(
         this.currentLevelId,
         this.moves,
@@ -560,6 +609,116 @@ export class GameController {
     return this.elapsedSeconds;
   }
 
+  public getHasUsedHint(): boolean {
+    return this.hasUsedHint;
+  }
+
+  public getIsAutoSolving(): boolean {
+    return this.isAutoSolving;
+  }
+
+  /**
+   * Requests a hint from the solver client and highlights the recommended tile.
+   * Marking hasUsedHint = true applies the 1-star maximum rating rule.
+   */
+  public async requestHint(): Promise<number | null> {
+    if (this.status === 'won' || this.isModalOpen() || this.isAutoSolving) {
+      return null;
+    }
+
+    this.hasUsedHint = true;
+    this.hudView.setHintLoading(true);
+
+    try {
+      const hintTile = await this.solverClient.getHint(this.board);
+      if ((this.status === 'playing' || this.status === 'ready') && !this.isModalOpen() && hintTile !== null) {
+        this.boardView.setHintTile(hintTile);
+      }
+      return hintTile;
+    } finally {
+      this.hudView.setHintLoading(false);
+    }
+  }
+
+  /**
+   * Toggles auto-solve mode on or off.
+   */
+  public async toggleAutoSolve(): Promise<void> {
+    if (this.isAutoSolving) {
+      this.stopAutoSolve();
+    } else {
+      await this.startAutoSolve();
+    }
+  }
+
+  /**
+   * Solves the board automatically and animates each step smoothly (~220ms/move).
+   * Marking hasUsedHint = true applies the 1-star maximum rating rule.
+   */
+  public async startAutoSolve(): Promise<void> {
+    if (this.status === 'won' || this.isModalOpen() || this.isAutoSolving) {
+      return;
+    }
+    if (isSolved(this.board)) {
+      return;
+    }
+
+    this.hasUsedHint = true;
+    this.isAutoSolving = true;
+    this.hudView.setAutoSolving(true);
+    this.boardView.clearHint();
+
+    try {
+      const result = await this.solverClient.solve(this.board, {
+        timeoutMs: 12000,
+      });
+
+      if (!this.isAutoSolving) {
+        return;
+      }
+
+      if (!result.solved && result.moves.length === 0) {
+        this.stopAutoSolve();
+        return;
+      }
+
+      this.autoSolveMoves = [...result.moves];
+      this.stepAutoSolve();
+    } catch (e) {
+      console.warn('[GameController] Auto-solve failed:', e);
+      this.stopAutoSolve();
+    }
+  }
+
+  private stepAutoSolve(): void {
+    if (!this.isAutoSolving || this.autoSolveMoves.length === 0) {
+      this.stopAutoSolve();
+      return;
+    }
+
+    const nextTileIndex = this.autoSolveMoves.shift()!;
+    const success = this.makeMove(nextTileIndex);
+
+    if (!success || this.status === 'won') {
+      this.stopAutoSolve();
+      return;
+    }
+
+    this.autoSolveTimerId = window.setTimeout(() => {
+      this.stepAutoSolve();
+    }, 220);
+  }
+
+  public stopAutoSolve(): void {
+    if (this.autoSolveTimerId !== null) {
+      clearTimeout(this.autoSolveTimerId);
+      this.autoSolveTimerId = null;
+    }
+    this.isAutoSolving = false;
+    this.autoSolveMoves = [];
+    this.hudView.setAutoSolving(false);
+  }
+
   /**
    * For automated testing / verification of win state.
    */
@@ -570,6 +729,8 @@ export class GameController {
   }
 
   public destroy(): void {
+    this.stopAutoSolve();
+    this.solverClient.destroy();
     this.stopTimer();
     this.layoutManager.destroy();
     this.pointerHandler.destroy();

@@ -9,6 +9,8 @@ export interface HudViewOptions {
   onUndo?: () => void;
   onRestart?: () => void;
   onScramble?: () => void;
+  onHint?: () => void;
+  onAutoSolve?: () => void;
   onSizeChange?: (size: number) => void;
   onOpenLevelSelect?: () => void;
   onSwitchMode?: (mode: GameMode) => void;
@@ -27,6 +29,11 @@ export class HudView {
   private undoBtn!: HTMLButtonElement;
   private restartBtn!: HTMLButtonElement;
   private scrambleBtn!: HTMLButtonElement;
+  private hintBtn!: HTMLButtonElement;
+  private hintTextEl!: HTMLElement;
+  private solveBtn!: HTMLButtonElement;
+  private solveIconEl!: HTMLElement;
+  private solveTextEl!: HTMLElement;
   private levelSelectBtn!: HTMLButtonElement;
   private modeToggleBtn!: HTMLButtonElement;
   private sizeButtons: HTMLButtonElement[] = [];
@@ -100,6 +107,10 @@ export class HudView {
 
         <!-- Game Action Buttons -->
         <div class="action-buttons-group">
+          <button type="button" id="btn-hint" class="btn action-btn" aria-label="Gợi ý nước đi tiếp theo (phím H)">
+            <span class="btn-icon">💡</span>
+            <span class="btn-text" id="btn-hint-text">Gợi ý</span>
+          </button>
           <button type="button" id="btn-undo" class="btn action-btn" aria-label="Hoàn tác bước đi (Z)" disabled>
             <span class="btn-icon">↩</span>
             <span class="btn-text">Hoàn tác</span>
@@ -107,6 +118,10 @@ export class HudView {
           <button type="button" id="btn-restart" class="btn action-btn" aria-label="Chơi lại ván hiện tại (R)">
             <span class="btn-icon">↺</span>
             <span class="btn-text">Chơi lại</span>
+          </button>
+          <button type="button" id="btn-solve" class="btn action-btn" aria-label="Tự động giải bàn cờ">
+            <span class="btn-icon" id="btn-solve-icon">🤖</span>
+            <span class="btn-text" id="btn-solve-text">Tự giải</span>
           </button>
           <button type="button" id="btn-scramble" class="btn action-btn btn-primary" aria-label="Trộn ván mới">
             <span class="btn-icon">⚡</span>
@@ -119,6 +134,11 @@ export class HudView {
     this.undoBtn = this.controlsContainer.querySelector('#btn-undo')!;
     this.restartBtn = this.controlsContainer.querySelector('#btn-restart')!;
     this.scrambleBtn = this.controlsContainer.querySelector('#btn-scramble')!;
+    this.hintBtn = this.controlsContainer.querySelector('#btn-hint')!;
+    this.hintTextEl = this.controlsContainer.querySelector('#btn-hint-text')!;
+    this.solveBtn = this.controlsContainer.querySelector('#btn-solve')!;
+    this.solveIconEl = this.controlsContainer.querySelector('#btn-solve-icon')!;
+    this.solveTextEl = this.controlsContainer.querySelector('#btn-solve-text')!;
     this.levelSelectBtn = this.controlsContainer.querySelector('#btn-level-select')!;
     this.modeToggleBtn = this.controlsContainer.querySelector('#btn-mode-toggle')!;
 
@@ -130,8 +150,10 @@ export class HudView {
     this.setSize(this.currentSize);
 
     // Event listeners
+    this.hintBtn.addEventListener('click', () => this.options.onHint?.());
     this.undoBtn.addEventListener('click', () => this.options.onUndo?.());
     this.restartBtn.addEventListener('click', () => this.options.onRestart?.());
+    this.solveBtn.addEventListener('click', () => this.options.onAutoSolve?.());
     this.scrambleBtn.addEventListener('click', () => this.options.onScramble?.());
     this.levelSelectBtn.addEventListener('click', () => this.options.onOpenLevelSelect?.());
     this.modeToggleBtn.addEventListener('click', () => {
@@ -208,6 +230,29 @@ export class HudView {
   public setCanUndo(canUndo: boolean): void {
     if (this.undoBtn) {
       this.undoBtn.disabled = !canUndo;
+    }
+  }
+
+  public setAutoSolving(isSolving: boolean): void {
+    if (this.solveBtn && this.solveTextEl && this.solveIconEl) {
+      if (isSolving) {
+        this.solveBtn.classList.add('btn-active-solving');
+        this.solveBtn.setAttribute('aria-label', 'Dừng tự động giải');
+        this.solveIconEl.textContent = '⏸';
+        this.solveTextEl.textContent = 'Dừng';
+      } else {
+        this.solveBtn.classList.remove('btn-active-solving');
+        this.solveBtn.setAttribute('aria-label', 'Tự động giải bàn cờ');
+        this.solveIconEl.textContent = '🤖';
+        this.solveTextEl.textContent = 'Tự giải';
+      }
+    }
+  }
+
+  public setHintLoading(isLoading: boolean): void {
+    if (this.hintBtn && this.hintTextEl) {
+      this.hintBtn.disabled = isLoading;
+      this.hintTextEl.textContent = isLoading ? '...' : 'Gợi ý';
     }
   }
 

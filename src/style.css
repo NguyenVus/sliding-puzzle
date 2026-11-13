@@ -526,7 +526,7 @@ body {
 
 .btn:active:not(:disabled) {
   transform: translateY(1px);
-  background: #ded0b9;
+  background: var(--btn-active-bg, #ded0b9);
   box-shadow: inset 0 1px 2px rgba(60, 30, 10, 0.2);
 }
 
@@ -1561,6 +1561,156 @@ body[data-theme="wood-dark"] kbd {
   color: #fce5b8;
 }
 
+body[data-theme="wood-dark"] .btn-primary {
+  background: linear-gradient(145deg, #c4823f, #a06325);
+  border-color: #7d4914;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="wood-dark"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(145deg, #d4914d, #b0702f);
+}
+
+body[data-theme="wood-dark"] .btn-ghost {
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f7d59b;
+}
+
+body[data-theme="wood-dark"] .size-btn.active {
+  background: #3d281a;
+  border-color: #5a3825;
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .tile-corner-badge {
+  background: rgba(20, 12, 7, 0.85);
+  border-color: #5a3825;
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .wood-slot {
+  background: #140d08;
+  border: 1px dashed rgba(90, 56, 37, 0.4);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+}
+
+body[data-theme="wood-dark"] .victory-card {
+  background: linear-gradient(150deg, #2b1c13 0%, #1e130c 100%);
+  border: 2px solid #5a3825;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="wood-dark"] .victory-title {
+  color: #f7d59b;
+}
+
+body[data-theme="wood-dark"] .victory-subtitle {
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .stat-box {
+  background: #23160e;
+  border-color: #4a2d1d;
+}
+
+body[data-theme="wood-dark"] .box-label {
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .box-value {
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .stat-sub {
+  color: #a6835c;
+}
+
+body[data-theme="wood-dark"] .v-star.empty {
+  color: #4a2e1d;
+}
+
+body[data-theme="wood-dark"] .level-select-dialog {
+  background: linear-gradient(150deg, #2b1c13 0%, #1e130c 100%);
+  border: 2px solid #5a3825;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+body[data-theme="wood-dark"] .level-select-header {
+  border-bottom-color: #3d281b;
+  background: rgba(35, 22, 14, 0.6);
+}
+
+body[data-theme="wood-dark"] .level-select-title {
+  color: #f7d59b;
+}
+
+body[data-theme="wood-dark"] .level-select-subtitle {
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .progress-pill {
+  background: #382418;
+  border-color: #5a3825;
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .tab-btn {
+  background: #23160e;
+  border-color: #4a2d1d;
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .tab-btn.active {
+  background: #382418;
+  border-color: #8c5932;
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .level-card.unlocked {
+  background: linear-gradient(135deg, #382418 0%, #291a11 100%);
+  border-color: #5a3825;
+}
+
+body[data-theme="wood-dark"] .level-card.unlocked:hover:not(:disabled) {
+  border-color: #c4823f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="wood-dark"] .level-card.current {
+  border-color: #c4823f;
+}
+
+body[data-theme="wood-dark"] .level-card.locked {
+  background: #1a100a;
+  border-color: #2e1e14;
+}
+
+body[data-theme="wood-dark"] .card-num {
+  color: #fce5b8;
+}
+
+body[data-theme="wood-dark"] .card-size {
+  color: #c4a179;
+}
+
+body[data-theme="wood-dark"] .card-lock-icon {
+  color: #6b4d34;
+}
+
+body[data-theme="wood-dark"] .star.empty {
+  color: #4a2e1d;
+}
+
+body[data-theme="wood-dark"] .level-select-footer {
+  background: rgba(30, 19, 12, 0.6);
+  border-top-color: #3d281b;
+}
+
 /* ==========================================================================
    Marble & Gold Theme (Đá Cẩm Thạch Hoàng Gia)
    ========================================================================== */
@@ -1767,6 +1917,159 @@ body[data-theme="marble-gold"] .btn-classic-numbers:hover {
   background: #f5eedc;
 }
 
+body[data-theme="marble-gold"] .btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  border-color: #996515;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+body[data-theme="marble-gold"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e0be4e 0%, #c49215 100%);
+}
+
+body[data-theme="marble-gold"] .btn-ghost {
+  color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .btn-ghost:hover {
+  background: rgba(212, 175, 55, 0.12);
+  color: #b8860b;
+}
+
+body[data-theme="marble-gold"] .size-btn.active {
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  border-color: #996515;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+}
+
+body[data-theme="marble-gold"] .tile-corner-badge {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: #d4af37;
+  color: #b8860b;
+  text-shadow: none;
+}
+
+body[data-theme="marble-gold"] .wood-slot {
+  background: linear-gradient(135deg, #e4e7ec 0%, #d8dde3 100%);
+  border: 1px dashed rgba(212, 175, 55, 0.4);
+  box-shadow: inset 0 3px 8px rgba(180, 140, 40, 0.2);
+}
+
+body[data-theme="marble-gold"] .victory-card {
+  background: linear-gradient(150deg, #ffffff 0%, #f7f5ed 100%);
+  border: 2px solid #d4af37;
+  box-shadow: 0 20px 40px rgba(180, 140, 40, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+}
+
+body[data-theme="marble-gold"] .victory-title {
+  color: #b8860b;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+body[data-theme="marble-gold"] .victory-subtitle {
+  color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .stat-box {
+  background: #fdfbf7;
+  border-color: #d4c294;
+}
+
+body[data-theme="marble-gold"] .box-label {
+  color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .box-value {
+  color: #996515;
+}
+
+body[data-theme="marble-gold"] .stat-sub {
+  color: #b8860b;
+}
+
+body[data-theme="marble-gold"] .v-star.empty {
+  color: #d4c294;
+}
+
+body[data-theme="marble-gold"] .level-select-dialog {
+  background: linear-gradient(150deg, #ffffff 0%, #f7f5ed 100%);
+  border: 2px solid #d4af37;
+  box-shadow: 0 20px 40px rgba(180, 140, 40, 0.25);
+}
+
+body[data-theme="marble-gold"] .level-select-header {
+  border-bottom-color: #ebdcb6;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="marble-gold"] .level-select-title {
+  color: #b8860b;
+}
+
+body[data-theme="marble-gold"] .level-select-subtitle {
+  color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .progress-pill {
+  background: #fdfbf7;
+  border-color: #d4c294;
+  color: #996515;
+}
+
+body[data-theme="marble-gold"] .tab-btn {
+  background: #fdfbf7;
+  border-color: #d4c294;
+  color: #7d5a08;
+}
+
+body[data-theme="marble-gold"] .tab-btn.active {
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  border-color: #996515;
+  color: #ffffff;
+}
+
+body[data-theme="marble-gold"] .level-card.unlocked {
+  background: linear-gradient(135deg, #ffffff 0%, #f6f2e8 100%);
+  border-color: #d4c294;
+}
+
+body[data-theme="marble-gold"] .level-card.unlocked:hover:not(:disabled) {
+  border-color: #d4af37;
+  box-shadow: 0 4px 12px rgba(180, 140, 40, 0.25);
+}
+
+body[data-theme="marble-gold"] .level-card.current {
+  border-color: #d4af37;
+}
+
+body[data-theme="marble-gold"] .level-card.locked {
+  background: #ece7db;
+  border-color: #d8cfbe;
+}
+
+body[data-theme="marble-gold"] .card-num {
+  color: #996515;
+}
+
+body[data-theme="marble-gold"] .card-size {
+  color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .card-lock-icon {
+  color: #a8977c;
+}
+
+body[data-theme="marble-gold"] .star.empty {
+  color: #d4c294;
+}
+
+body[data-theme="marble-gold"] .level-select-footer {
+  background: rgba(255, 255, 255, 0.6);
+  border-top-color: #ebdcb6;
+}
+
 /* ==========================================================================
    Tatami & Sakura Theme (Nhật Bản Cổ Điển)
    ========================================================================== */
@@ -1966,6 +2269,152 @@ body[data-theme="tatami-sakura"] .btn-classic-numbers {
 
 body[data-theme="tatami-sakura"] .btn-classic-numbers:hover {
   background: #ebd8cb;
+}
+
+body[data-theme="tatami-sakura"] .btn-primary {
+  background: linear-gradient(135deg, #c44569 0%, #8c3547 100%);
+  border-color: #7a1d2e;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(196, 69, 105, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+body[data-theme="tatami-sakura"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d25377 0%, #9a3d50 100%);
+}
+
+body[data-theme="tatami-sakura"] .btn-ghost {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .btn-ghost:hover {
+  background: rgba(196, 69, 105, 0.12);
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .size-btn.active {
+  background: linear-gradient(135deg, #c44569 0%, #8c3547 100%);
+  border-color: #7a1d2e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(196, 69, 105, 0.35);
+}
+
+body[data-theme="tatami-sakura"] .tile-corner-badge {
+  background: rgba(251, 247, 242, 0.88);
+  border-color: #8c3547;
+  color: #7a1d2e;
+  text-shadow: none;
+}
+
+body[data-theme="tatami-sakura"] .victory-card {
+  background: linear-gradient(150deg, #fdf8f3 0%, #f6ece1 100%);
+  border: 2px solid #8c3547;
+  box-shadow: 0 20px 40px rgba(122, 29, 46, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+body[data-theme="tatami-sakura"] .victory-title {
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .victory-subtitle {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .stat-box {
+  background: #fbf2e9;
+  border-color: #debdb5;
+}
+
+body[data-theme="tatami-sakura"] .box-label {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .box-value {
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .stat-sub {
+  color: #a05d6a;
+}
+
+body[data-theme="tatami-sakura"] .v-star.empty {
+  color: #debdb5;
+}
+
+body[data-theme="tatami-sakura"] .level-select-dialog {
+  background: linear-gradient(150deg, #fdf8f3 0%, #f6ece1 100%);
+  border: 2px solid #8c3547;
+  box-shadow: 0 20px 40px rgba(122, 29, 46, 0.22);
+}
+
+body[data-theme="tatami-sakura"] .level-select-header {
+  border-bottom-color: #debdb5;
+  background: rgba(251, 247, 242, 0.6);
+}
+
+body[data-theme="tatami-sakura"] .level-select-title {
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .level-select-subtitle {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .progress-pill {
+  background: #f7eee4;
+  border-color: #debdb5;
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .tab-btn {
+  background: #f7eee4;
+  border-color: #debdb5;
+  color: #591724;
+}
+
+body[data-theme="tatami-sakura"] .tab-btn.active {
+  background: linear-gradient(135deg, #c44569 0%, #8c3547 100%);
+  border-color: #7a1d2e;
+  color: #ffffff;
+}
+
+body[data-theme="tatami-sakura"] .level-card.unlocked {
+  background: linear-gradient(135deg, #fffcf9 0%, #f4e8dc 100%);
+  border-color: #debdb5;
+}
+
+body[data-theme="tatami-sakura"] .level-card.unlocked:hover:not(:disabled) {
+  border-color: #c44569;
+  box-shadow: 0 4px 10px rgba(122, 29, 46, 0.2);
+}
+
+body[data-theme="tatami-sakura"] .level-card.current {
+  border-color: #c44569;
+}
+
+body[data-theme="tatami-sakura"] .level-card.locked {
+  background: #ebdcd0;
+  border-color: #d6c1b3;
+}
+
+body[data-theme="tatami-sakura"] .card-num {
+  color: #7a1d2e;
+}
+
+body[data-theme="tatami-sakura"] .card-size {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .card-lock-icon {
+  color: #a8887e;
+}
+
+body[data-theme="tatami-sakura"] .star.empty {
+  color: #debdb5;
+}
+
+body[data-theme="tatami-sakura"] .level-select-footer {
+  background: rgba(251, 247, 242, 0.6);
+  border-top-color: #debdb5;
 }
 
 /* ==========================================================================
@@ -2209,6 +2658,229 @@ body[data-theme="neon-cyberpunk"] .btn-classic-numbers {
 body[data-theme="neon-cyberpunk"] .btn-classic-numbers:hover {
   background: #18203c;
   border-color: #00f0ff;
+}
+
+body[data-theme="neon-cyberpunk"] .btn-primary {
+  background: linear-gradient(135deg, #00f0ff 0%, #00b4d8 100%);
+  border-color: #00f0ff;
+  color: #050811;
+  font-weight: 800;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-shadow: none;
+}
+
+body[data-theme="neon-cyberpunk"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #38f3ff 0%, #00c7ec 100%);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.7);
+}
+
+body[data-theme="neon-cyberpunk"] .btn-ghost {
+  color: #00f0ff;
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+}
+
+body[data-theme="neon-cyberpunk"] .btn-ghost:hover {
+  background: rgba(0, 240, 255, 0.15);
+  color: #38f3ff;
+}
+
+body[data-theme="neon-cyberpunk"] .size-btn.active {
+  background: #00f0ff;
+  border-color: #00f0ff;
+  color: #050811;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+  font-weight: 800;
+}
+
+body[data-theme="neon-cyberpunk"] .tile-corner-badge {
+  background: rgba(5, 8, 17, 0.85);
+  border-color: rgba(0, 240, 255, 0.5);
+  color: #00f0ff;
+  text-shadow: 0 0 4px rgba(0, 240, 255, 0.7);
+}
+
+body[data-theme="neon-cyberpunk"] .wood-slot {
+  background: #05060a;
+  border: 1px dashed rgba(0, 240, 255, 0.25);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 240, 255, 0.1);
+}
+
+body[data-theme="neon-cyberpunk"] .toggle-slider {
+  background-color: #161c32;
+  border-color: rgba(0, 240, 255, 0.35);
+}
+
+body[data-theme="neon-cyberpunk"] .toggle-switch input:checked + .toggle-slider {
+  background-color: #00f0ff;
+  border-color: #00f0ff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+
+body[data-theme="neon-cyberpunk"] .toggle-switch input:checked + .toggle-slider::before {
+  background-color: #050811;
+}
+
+body[data-theme="neon-cyberpunk"] .wood-tile.hint-glow {
+  border-color: #ff007f !important;
+  animation: hintNeonTileGlow 1.2s infinite ease-in-out;
+}
+
+@keyframes hintNeonTileGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2.5px #ff007f,
+      0 0 20px 4px rgba(255, 0, 127, 0.7),
+      inset 0 0 12px rgba(0, 240, 255, 0.6);
+    filter: brightness(1.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3.5px #00f0ff,
+      0 0 30px 8px rgba(0, 240, 255, 0.85),
+      inset 0 0 18px rgba(255, 0, 127, 0.8);
+    filter: brightness(1.25);
+  }
+}
+
+body[data-theme="neon-cyberpunk"] .victory-card {
+  background: linear-gradient(150deg, #111528 0%, #080910 100%);
+  border: 2px solid #00f0ff;
+  box-shadow:
+    0 0 35px rgba(0, 240, 255, 0.35),
+    0 0 70px rgba(255, 0, 127, 0.2),
+    inset 0 1px 1px rgba(0, 240, 255, 0.3);
+}
+
+body[data-theme="neon-cyberpunk"] .victory-title {
+  color: #00f0ff;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
+}
+
+body[data-theme="neon-cyberpunk"] .victory-subtitle {
+  color: #94a3b8;
+}
+
+body[data-theme="neon-cyberpunk"] .stat-box {
+  background: #0d1020;
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+body[data-theme="neon-cyberpunk"] .box-label {
+  color: #94a3b8;
+}
+
+body[data-theme="neon-cyberpunk"] .box-value {
+  color: #00f0ff;
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.5);
+}
+
+body[data-theme="neon-cyberpunk"] .stat-sub {
+  color: #ff007f;
+}
+
+body[data-theme="neon-cyberpunk"] .v-star.earned {
+  color: #00f0ff;
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.8), 0 0 25px rgba(255, 0, 127, 0.6);
+}
+
+body[data-theme="neon-cyberpunk"] .v-star.empty {
+  color: #1e2640;
+}
+
+body[data-theme="neon-cyberpunk"] .new-record-badge {
+  background: linear-gradient(135deg, #00f0ff, #ff007f);
+  color: #050811;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="neon-cyberpunk"] .level-select-dialog {
+  background: linear-gradient(150deg, #111528 0%, #080910 100%);
+  border: 2px solid #00f0ff;
+  box-shadow:
+    0 0 35px rgba(0, 240, 255, 0.25),
+    0 0 70px rgba(255, 0, 127, 0.15);
+}
+
+body[data-theme="neon-cyberpunk"] .level-select-header {
+  border-bottom-color: rgba(0, 240, 255, 0.2);
+  background: rgba(13, 16, 28, 0.8);
+}
+
+body[data-theme="neon-cyberpunk"] .level-select-title {
+  color: #00f0ff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+body[data-theme="neon-cyberpunk"] .level-select-subtitle {
+  color: #94a3b8;
+}
+
+body[data-theme="neon-cyberpunk"] .progress-pill {
+  background: #0d1020;
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #00f0ff;
+}
+
+body[data-theme="neon-cyberpunk"] .tab-btn {
+  background: #111528;
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #94a3b8;
+}
+
+body[data-theme="neon-cyberpunk"] .tab-btn.active {
+  background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+  border-color: #00f0ff;
+  color: #050811;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+
+body[data-theme="neon-cyberpunk"] .level-card.unlocked {
+  background: linear-gradient(135deg, #18203a 0%, #0f1424 100%);
+  border-color: rgba(0, 240, 255, 0.35);
+}
+
+body[data-theme="neon-cyberpunk"] .level-card.unlocked:hover:not(:disabled) {
+  border-color: #ff007f;
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+}
+
+body[data-theme="neon-cyberpunk"] .level-card.current {
+  border: 2px solid #00f0ff;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+}
+
+body[data-theme="neon-cyberpunk"] .level-card.locked {
+  background: #0a0c16;
+  border-color: #161b2e;
+}
+
+body[data-theme="neon-cyberpunk"] .card-num {
+  color: #00f0ff;
+  text-shadow: 0 0 4px rgba(0, 240, 255, 0.5);
+}
+
+body[data-theme="neon-cyberpunk"] .card-size {
+  color: #94a3b8;
+}
+
+body[data-theme="neon-cyberpunk"] .card-lock-icon {
+  color: #475569;
+}
+
+body[data-theme="neon-cyberpunk"] .star.filled {
+  color: #00f0ff;
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.8);
+}
+
+body[data-theme="neon-cyberpunk"] .star.empty {
+  color: #1e2640;
+}
+
+body[data-theme="neon-cyberpunk"] .level-select-footer {
+  background: rgba(13, 16, 28, 0.8);
+  border-top-color: rgba(0, 240, 255, 0.2);
 }
 
 /* ==========================================================================

@@ -1,4 +1,5 @@
 import type {
+  BoardTheme,
   FreePlayRecord,
   GameStorageData,
   LevelRecord,
@@ -19,6 +20,14 @@ export const DEFAULT_SETTINGS: UserSettings = {
   pictureNumbersEnabled: true,
   selectedPictureId: 'preset-fuji',
 };
+
+export const VALID_THEMES: readonly BoardTheme[] = [
+  'wood-light',
+  'wood-dark',
+  'marble-gold',
+  'tatami-sakura',
+  'neon-cyberpunk',
+];
 
 export class StorageManager {
   private inMemoryFallback: Map<string, string> = new Map();
@@ -120,10 +129,19 @@ export class StorageManager {
         ? Math.min(TOTAL_LEVELS, Math.max(1, Math.floor(rawMax)))
         : 1;
 
+      const rawSettings =
+        parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {};
       const mergedSettings: UserSettings = {
         ...DEFAULT_SETTINGS,
-        ...(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {}),
+        ...rawSettings,
       };
+
+      if (!VALID_THEMES.includes(mergedSettings.theme)) {
+        mergedSettings.theme = DEFAULT_SETTINGS.theme;
+      }
+      if (typeof mergedSettings.hapticEnabled !== 'boolean') {
+        mergedSettings.hapticEnabled = DEFAULT_SETTINGS.hapticEnabled;
+      }
 
       const merged: GameStorageData = {
         version: typeof parsed.version === 'number' ? parsed.version : defaults.version,
@@ -328,6 +346,12 @@ export class StorageManager {
       ...data.settings,
       ...partial,
     };
+    if (!VALID_THEMES.includes(updated.theme)) {
+      updated.theme = DEFAULT_SETTINGS.theme;
+    }
+    if (typeof updated.hapticEnabled !== 'boolean') {
+      updated.hapticEnabled = DEFAULT_SETTINGS.hapticEnabled;
+    }
     data.settings = updated;
     this.save(data);
     return updated;

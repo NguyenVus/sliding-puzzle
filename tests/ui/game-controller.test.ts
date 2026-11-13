@@ -411,21 +411,65 @@ describe('GameController', () => {
       const victorySpy = vi.spyOn(haptics, 'vibrateVictory');
       const buttonSpy = vi.spyOn(haptics, 'vibrateButton');
 
-      // Button click via toggleSound
+      // 1. Button click via toggleSound triggers haptic vibration even when muting
+      buttonSpy.mockClear();
       controller.toggleSound();
-      controller.toggleSound();
-      expect(buttonSpy).toHaveBeenCalled();
+      expect(buttonSpy).toHaveBeenCalledTimes(1);
 
-      // Make move
+      // 2. Tile slide triggering vibrateSlide or vibrateSnap
       const board = controller.getBoard();
       const blank = getBlankIndex(board);
       const targetIndex = blank === 0 ? 1 : 0;
       controller.makeMove(targetIndex);
       expect(slideSpy.mock.calls.length + snapSpy.mock.calls.length).toBeGreaterThan(0);
 
-      // Force win state
+      // 3. Force win state triggers victory fanfare rhythm
       controller.forceSolvedStateForTesting();
       expect(victorySpy).toHaveBeenCalled();
+    });
+
+    it('differentiates between vibrateSnap when tile reaches home slot and vibrateSlide otherwise', () => {
+      const haptics = controller.getHapticFeedback();
+      const slideSpy = vi.spyOn(haptics, 'vibrateSlide');
+      const snapSpy = vi.spyOn(haptics, 'vibrateSnap');
+
+      // Create a test board where moving a tile places it into its home slot
+      // [0, 1, 3, 4, 5, 6, 7, 2, 8] - size 3
+      // Moving tile 1 (at index 1) to index 0:
+      // In next board: tiles[0] = 1 (target slot for tile 1 is index 0: tileVal === 0 + 1)
+      // tiles[7] is 2, tiles[8] is 8 (not solved yet, so not victory)
+      const snapBoard = {
+        n: 3,
+        size: 3,
+        tiles: [0, 1, 3, 4, 5, 6, 7, 2, 8],
+      };
+      (controller as unknown as { board: typeof snapBoard; status: string }).board = snapBoard;
+      (controller as unknown as { status: string }).status = 'playing';
+
+      snapSpy.mockClear();
+      slideSpy.mockClear();
+
+      controller.makeMove(1);
+      expect(snapSpy).toHaveBeenCalledTimes(1);
+      expect(slideSpy).not.toHaveBeenCalled();
+
+      // Now create a test board where moving a tile does NOT place it into its home slot
+      // [0, 7, 3, 4, 5, 6, 1, 2, 8]
+      // Moving tile 7 (at index 1) to index 0:
+      // In next board: tiles[0] = 7 (7 !== 0 + 1, so not home slot!)
+      const nonSnapBoard = {
+        n: 3,
+        size: 3,
+        tiles: [0, 7, 3, 4, 5, 6, 1, 2, 8],
+      };
+      (controller as unknown as { board: typeof nonSnapBoard }).board = nonSnapBoard;
+
+      snapSpy.mockClear();
+      slideSpy.mockClear();
+
+      controller.makeMove(1);
+      expect(slideSpy).toHaveBeenCalledTimes(1);
+      expect(snapSpy).not.toHaveBeenCalled();
     });
   });
 });

@@ -43,6 +43,9 @@ export class HapticFeedback {
    */
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
+    if (!enabled) {
+      this.destroy();
+    }
   }
 
   /**

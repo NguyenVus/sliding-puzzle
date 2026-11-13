@@ -78,6 +78,8 @@ describe('HapticFeedback (src/haptics/haptic-feedback.ts)', () => {
 
     haptic.setEnabled(false);
     expect(haptic.isEnabled()).toBe(false);
+    expect(vibrateMock).toHaveBeenCalledWith(0);
+    vibrateMock.mockClear();
 
     const result = haptic.vibrateSlide();
     expect(result).toBe(false);

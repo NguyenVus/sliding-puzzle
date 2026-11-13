@@ -272,8 +272,9 @@ export class GameController {
         this.soundSynthesizer.setSoundEnabled(enabled);
         this.hudView.setSoundEnabled(enabled);
         if (enabled) {
-          this.playButtonClick();
+          this.soundSynthesizer.playButtonClick();
         }
+        this.hapticFeedback.vibrateButton();
       },
       onHapticChange: (enabled) => {
         this.hapticFeedback.setEnabled(enabled);
@@ -610,8 +611,9 @@ export class GameController {
     const nextState = this.soundSynthesizer.toggleMute();
     this.hudView.setSoundEnabled(nextState);
     if (nextState) {
-      this.playButtonClick();
+      this.soundSynthesizer.playButtonClick();
     }
+    this.hapticFeedback.vibrateButton();
     return nextState;
   }
 

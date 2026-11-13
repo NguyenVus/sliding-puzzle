@@ -179,4 +179,30 @@ describe('Storage System (src/storage)', () => {
     storage.updateSettings({ theme: 'wood-dark' });
     expect(storage.getSettings().theme).toBe('wood-dark');
   });
+
+  it('safely falls back to defaults when corrupted theme or non-boolean hapticEnabled are loaded', () => {
+    // 1. Invalid theme via updateSettings
+    // @ts-expect-error Testing invalid theme runtime value
+    storage.updateSettings({ theme: 'invalid-galactic-theme' });
+    expect(storage.getSettings().theme).toBe('wood-light');
+
+    // 2. Corrupted localStorage raw JSON
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        unlockedMaxLevel: 1,
+        levels: {},
+        freePlayBest: {},
+        settings: {
+          theme: 'corrupted-theme-id',
+          hapticEnabled: 'not-a-boolean',
+        },
+      })
+    );
+
+    const reloaded = storage.load();
+    expect(reloaded.settings.theme).toBe('wood-light');
+    expect(reloaded.settings.hapticEnabled).toBe(true);
+  });
 });

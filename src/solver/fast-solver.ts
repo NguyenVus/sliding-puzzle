@@ -3,13 +3,28 @@ import { isSolved, getBlankIndex } from '../core/board';
 import { calculateCombinedHeuristic } from './heuristic';
 import type { SolverOptions, SolverResult } from './types';
 
+interface PathNode {
+  tile: number;
+  parent: PathNode | null;
+}
+
 interface SearchNode {
   tiles: number[];
   blank: number;
   g: number;
   h: number;
   f: number;
-  moves: number[];
+  path: PathNode | null;
+}
+
+function reconstructMoves(node: PathNode | null): number[] {
+  const moves: number[] = [];
+  let curr = node;
+  while (curr !== null) {
+    moves.push(curr.tile);
+    curr = curr.parent;
+  }
+  return moves.reverse();
 }
 
 class FastMinHeap {
@@ -35,10 +50,18 @@ class FastMinHeap {
     return this.data.length;
   }
 
+  private isBetter(a: SearchNode, b: SearchNode): boolean {
+    if (a.f !== b.f) {
+      return a.f < b.f;
+    }
+    // Tie-break: prefer state with lower heuristic (closer to target)
+    return a.h < b.h;
+  }
+
   private bubbleUp(idx: number): void {
     while (idx > 0) {
       const parentIdx = (idx - 1) >> 1;
-      if (this.data[idx].f < this.data[parentIdx].f) {
+      if (this.isBetter(this.data[idx], this.data[parentIdx])) {
         const temp = this.data[idx];
         this.data[idx] = this.data[parentIdx];
         this.data[parentIdx] = temp;
@@ -56,10 +79,10 @@ class FastMinHeap {
       const left = (idx << 1) + 1;
       const right = (idx << 1) + 2;
 
-      if (left < length && this.data[left].f < this.data[smallest].f) {
+      if (left < length && this.isBetter(this.data[left], this.data[smallest])) {
         smallest = left;
       }
-      if (right < length && this.data[right].f < this.data[smallest].f) {
+      if (right < length && this.isBetter(this.data[right], this.data[smallest])) {
         smallest = right;
       }
       if (smallest !== idx) {
@@ -83,7 +106,9 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
   const size = board.size;
   const timeoutMs = options.timeoutMs ?? 5000;
   const maxNodes = options.maxNodes ?? 150_000;
-  const weight = options.weight ?? (size >= 5 ? 4.5 : 3.5);
+  const defaultWeight =
+    size >= 8 ? 8.0 : size >= 7 ? 7.0 : size >= 6 ? 6.0 : size >= 5 ? 4.5 : 3.5;
+  const weight = options.weight ?? defaultWeight;
   const signal = options.signal;
 
   if (isSolved(board)) {
@@ -110,7 +135,7 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
     g: 0,
     h: initialH,
     f: weight * initialH,
-    moves: [],
+    path: null,
   };
 
   heap.push(startNode);
@@ -136,7 +161,7 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
     if (current.h === 0) {
       return {
         solved: true,
-        moves: current.moves,
+        moves: reconstructMoves(current.path),
         nodesExplored,
         timeMs: performance.now() - startTime,
         algorithm: 'fast',
@@ -147,7 +172,7 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
       bestNode = current;
     }
 
-    const { tiles, blank, g, moves } = current;
+    const { tiles, blank, g, path } = current;
     const blankRow = Math.floor(blank / size);
     const blankCol = blank % size;
 
@@ -180,7 +205,10 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
         g: nextG,
         h,
         f,
-        moves: [...moves, nextTile],
+        path: {
+          tile: nextTile,
+          parent: path,
+        },
       });
     }
   }
@@ -189,7 +217,7 @@ export function solveFast(board: Board, options: SolverOptions = {}): SolverResu
   // return best path towards minimal heuristic node found
   return {
     solved: false,
-    moves: bestNode.moves,
+    moves: reconstructMoves(bestNode.path),
     nodesExplored,
     timeMs: performance.now() - startTime,
     algorithm: 'fast',

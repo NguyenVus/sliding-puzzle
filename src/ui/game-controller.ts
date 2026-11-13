@@ -62,8 +62,11 @@ export class GameController {
   private status: GameStatus = 'ready';
   private hasUsedHint = false;
   private isAutoSolving = false;
+  private isHintLoading = false;
   private autoSolveTimerId: number | null = null;
   private autoSolveMoves: number[] = [];
+  private autoSolveSessionId = 0;
+  private boardRevision = 0;
 
   constructor(
     elements: GameControllerElements,
@@ -207,9 +210,11 @@ export class GameController {
     this.mode = 'campaign';
     this.currentLevelId = levelId;
     this.size = config.size;
+    this.boardRevision += 1;
 
     this.stopAutoSolve();
     this.hasUsedHint = false;
+    this.boardRevision += 1;
     this.boardView.clearHint();
 
     this.layoutManager.setGridSize(this.size);
@@ -241,9 +246,11 @@ export class GameController {
     const validSize = Math.max(3, Math.min(8, size));
     this.mode = 'freeplay';
     this.size = validSize;
+    this.boardRevision += 1;
 
     this.stopAutoSolve();
     this.hasUsedHint = false;
+    this.boardRevision += 1;
     this.boardView.clearHint();
 
     this.layoutManager.setGridSize(this.size);
@@ -299,6 +306,7 @@ export class GameController {
     }
     this.stopAutoSolve();
     this.hasUsedHint = false;
+    this.boardRevision += 1;
     this.boardView.clearHint();
 
     this.stopTimer();
@@ -393,6 +401,7 @@ export class GameController {
     }
 
     // Record previous state for Undo
+    this.boardRevision += 1;
     this.history.push(this.board);
     this.board = nextBoard;
     this.moves += 1;
@@ -501,6 +510,8 @@ export class GameController {
     }
 
     const previousBoard = this.history.pop()!;
+    this.boardRevision += 1;
+    this.boardView.clearHint();
     this.board = previousBoard;
     if (this.moves > 0) {
       this.moves -= 1;
@@ -622,20 +633,34 @@ export class GameController {
    * Marking hasUsedHint = true applies the 1-star maximum rating rule.
    */
   public async requestHint(): Promise<number | null> {
-    if (this.status === 'won' || this.isModalOpen() || this.isAutoSolving) {
+    if (
+      this.status === 'won' ||
+      this.isModalOpen() ||
+      this.isAutoSolving ||
+      this.isHintLoading ||
+      isSolved(this.board)
+    ) {
       return null;
     }
 
+    const reqRevision = this.boardRevision;
+    this.isHintLoading = true;
     this.hasUsedHint = true;
     this.hudView.setHintLoading(true);
 
     try {
       const hintTile = await this.solverClient.getHint(this.board);
-      if ((this.status === 'playing' || this.status === 'ready') && !this.isModalOpen() && hintTile !== null) {
+      if (
+        this.boardRevision === reqRevision &&
+        (this.status === 'playing' || this.status === 'ready') &&
+        !this.isModalOpen() &&
+        hintTile !== null
+      ) {
         this.boardView.setHintTile(hintTile);
       }
       return hintTile;
     } finally {
+      this.isHintLoading = false;
       this.hudView.setHintLoading(false);
     }
   }
@@ -663,6 +688,7 @@ export class GameController {
       return;
     }
 
+    const sessionId = ++this.autoSolveSessionId;
     this.hasUsedHint = true;
     this.isAutoSolving = true;
     this.hudView.setAutoSolving(true);
@@ -673,26 +699,44 @@ export class GameController {
         timeoutMs: 12000,
       });
 
-      if (!this.isAutoSolving) {
+      if (!this.isAutoSolving || this.autoSolveSessionId !== sessionId) {
         return;
       }
 
-      if (!result.solved && result.moves.length === 0) {
-        this.stopAutoSolve();
+      if (result.moves.length === 0) {
+        if (isSolved(this.board)) {
+          this.handleVictory();
+        } else {
+          this.stopAutoSolve();
+        }
         return;
       }
 
       this.autoSolveMoves = [...result.moves];
-      this.stepAutoSolve();
-    } catch (e) {
-      console.warn('[GameController] Auto-solve failed:', e);
-      this.stopAutoSolve();
+      this.stepAutoSolve(sessionId);
+    } catch {
+      if (this.autoSolveSessionId === sessionId) {
+        this.stopAutoSolve();
+      }
     }
   }
 
-  private stepAutoSolve(): void {
-    if (!this.isAutoSolving || this.autoSolveMoves.length === 0) {
+  private stepAutoSolve(sessionId: number): void {
+    if (!this.isAutoSolving || this.autoSolveSessionId !== sessionId) {
       this.stopAutoSolve();
+      return;
+    }
+
+    if (this.autoSolveMoves.length === 0) {
+      if (isSolved(this.board)) {
+        this.stopAutoSolve();
+        if (this.status !== 'won') {
+          this.handleVictory();
+        }
+        return;
+      }
+      // If previous batch exhausted but board not yet solved, continue solving
+      void this.continueAutoSolve(sessionId);
       return;
     }
 
@@ -705,11 +749,46 @@ export class GameController {
     }
 
     this.autoSolveTimerId = window.setTimeout(() => {
-      this.stepAutoSolve();
+      this.stepAutoSolve(sessionId);
     }, 220);
   }
 
+  private async continueAutoSolve(sessionId: number): Promise<void> {
+    if (
+      !this.isAutoSolving ||
+      this.autoSolveSessionId !== sessionId ||
+      isSolved(this.board) ||
+      this.status === 'won'
+    ) {
+      this.stopAutoSolve();
+      return;
+    }
+
+    try {
+      const result = await this.solverClient.solve(this.board, {
+        timeoutMs: 8000,
+      });
+
+      if (!this.isAutoSolving || this.autoSolveSessionId !== sessionId) {
+        return;
+      }
+
+      if (result.moves.length === 0) {
+        this.stopAutoSolve();
+        return;
+      }
+
+      this.autoSolveMoves = [...result.moves];
+      this.stepAutoSolve(sessionId);
+    } catch {
+      if (this.autoSolveSessionId === sessionId) {
+        this.stopAutoSolve();
+      }
+    }
+  }
+
   public stopAutoSolve(): void {
+    this.autoSolveSessionId += 1;
     if (this.autoSolveTimerId !== null) {
       clearTimeout(this.autoSolveTimerId);
       this.autoSolveTimerId = null;
@@ -717,6 +796,7 @@ export class GameController {
     this.isAutoSolving = false;
     this.autoSolveMoves = [];
     this.hudView.setAutoSolving(false);
+    this.solverClient.cancel();
   }
 
   /**

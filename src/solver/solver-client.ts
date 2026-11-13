@@ -194,10 +194,18 @@ export class SolverClient {
         resolve: (res) => {
           resolve(res.hintTileIndex ?? (res.moves.length > 0 ? res.moves[0] : null));
         },
-        reject: () => {
-          // Fallback on error
-          const fallbackHint = getNextHintTile(board, { timeoutMs: 200 });
-          resolve(fallbackHint);
+        reject: (err) => {
+          if (err?.message === 'Solver task cancelled') {
+            resolve(null);
+            return;
+          }
+          // Fallback on unexpected error
+          try {
+            const fallbackHint = getNextHintTile(board, { timeoutMs: 200 });
+            resolve(fallbackHint);
+          } catch {
+            resolve(null);
+          }
         },
         timerId,
       });

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GameController } from '../../src/ui/game-controller';
 import { getBlankIndex, isSolved } from '../../src/core/board';
 import { STORAGE_KEY } from '../../src/storage';
+import { SolverClient } from '../../src/solver/solver-client';
 
 describe('GameController', () => {
   let root: HTMLDivElement;
@@ -273,6 +274,82 @@ describe('GameController', () => {
       expect(controller.getIsAutoSolving()).toBe(false);
 
       await autoSolvePromise;
+    });
+
+    it('does not apply stale hint if board moves before hint resolves', async () => {
+      // Create a delayed solver client
+      let resolveHint!: (val: number | null) => void;
+      const delayedClient = {
+        getHint: () => new Promise<number | null>((resolve) => {
+          resolveHint = resolve;
+        }),
+        solve: () => Promise.resolve({ solved: true, moves: [], nodesExplored: 0, timeMs: 0, algorithm: 'auto' as const }),
+        cancel: () => {},
+        destroy: () => {},
+      } as unknown as SolverClient;
+
+      const c = new GameController(
+        { root, hudContainer, boardContainer, controlsContainer },
+        { solverClient: delayedClient }
+      );
+
+      // Trigger hint request
+      const hintPromise = c.requestHint();
+
+      // Before resolving, player makes a move
+      const initialBlank = getBlankIndex(c.getBoard());
+      const n = c.getBoard().size;
+      const bRow = Math.floor(initialBlank / n);
+      const bCol = initialBlank % n;
+      const moveIdx = bRow > 0 ? (bRow - 1) * n + bCol : (bRow + 1) * n + bCol;
+      c.makeMove(moveIdx);
+
+      // Now resolve the old hint with a tile index
+      resolveHint(moveIdx);
+      await hintPromise;
+
+      // Because boardRevision changed, stale hint must NOT be active
+      expect(boardContainer.querySelector('.wood-tile.hint-glow')).toBeNull();
+      c.destroy();
+    });
+
+    it('does not penalize with hasUsedHint if board is already solved when requesting hint', async () => {
+      controller.forceSolvedStateForTesting();
+      // Reset status to ready to test solved board
+      const hint = await controller.requestHint();
+      expect(hint).toBeNull();
+      expect(controller.getHasUsedHint()).toBe(false);
+    });
+
+    it('ignores duplicate concurrent hint requests while loading', async () => {
+      let callCount = 0;
+      let resolveHint!: (val: number | null) => void;
+      const delayedClient = {
+        getHint: () => {
+          callCount++;
+          return new Promise<number | null>((resolve) => {
+            resolveHint = resolve;
+          });
+        },
+        solve: () => Promise.resolve({ solved: true, moves: [], nodesExplored: 0, timeMs: 0, algorithm: 'auto' as const }),
+        cancel: () => {},
+        destroy: () => {},
+      } as unknown as SolverClient;
+
+      const c = new GameController(
+        { root, hudContainer, boardContainer, controlsContainer },
+        { solverClient: delayedClient }
+      );
+
+      const p1 = c.requestHint();
+      const p2 = c.requestHint(); // concurrent call while loading
+
+      expect(callCount).toBe(1);
+      expect(await p2).toBeNull();
+
+      resolveHint(1);
+      await p1;
+      c.destroy();
     });
   });
 });

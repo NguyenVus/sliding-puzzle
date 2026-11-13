@@ -55,6 +55,20 @@ describe('Fast Solver (src/solver/fast-solver.ts)', () => {
     expect(isSolved(curr)).toBe(true);
   });
 
+  it('solves 6x6 board with deep scramble and verifies complete solution', () => {
+    const board = scrambleBoard(6, 60, 4321);
+    const result = solveFast(board, { timeoutMs: 5000 });
+
+    expect(result.solved).toBe(true);
+    expect(result.moves.length).toBeGreaterThan(0);
+
+    let curr = board;
+    for (const move of result.moves) {
+      curr = moveTile(curr, move);
+    }
+    expect(isSolved(curr)).toBe(true);
+  });
+
   it('stops and returns partial results if maxNodes limit is reached', () => {
     const board = scrambleBoard(4, 40, 9999);
     // Setting maxNodes very low forces early exit

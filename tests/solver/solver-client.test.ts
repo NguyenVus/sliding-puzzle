@@ -42,4 +42,46 @@ describe('Solver Client & High-Level Solver (src/solver/)', () => {
     client.cancel();
     client.destroy();
   });
+
+  it('SolverClient communicates with Worker and handles cancellation cleanly', async () => {
+    let messageReceived: unknown = null;
+    let terminated = false;
+
+    // Mock Worker
+    const mockWorker = {
+      onmessage: null as ((ev: MessageEvent) => void) | null,
+      onerror: null as ((ev: ErrorEvent) => void) | null,
+      postMessage: (data: unknown) => {
+        messageReceived = data;
+      },
+      terminate: () => {
+        terminated = true;
+      },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    } as unknown as Worker;
+
+    // Force worker support in test
+    (window as unknown as { Worker: typeof Worker }).Worker = class {} as unknown as typeof Worker;
+
+    const client = new SolverClient({
+      workerFactory: () => mockWorker,
+    });
+
+    const board = createBoard(3, [1, 2, 3, 4, 5, 6, 7, 0, 8]);
+    const hintPromise = client.getHint(board);
+
+    expect(messageReceived).not.toBeNull();
+
+    // Cancel while pending
+    client.cancel();
+    expect(terminated).toBe(true);
+
+    const hintResult = await hintPromise;
+    expect(hintResult).toBeNull(); // Cancelled request resolves to null without running fallback
+
+    client.destroy();
+    delete (window as unknown as { Worker?: unknown }).Worker;
+  });
 });

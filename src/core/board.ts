@@ -15,6 +15,18 @@ export function createBoard(size: number, tiles: readonly number[]): Board {
     throw new Error(`Expected ${totalTiles} tiles for a ${size}x${size} board, received ${tiles.length}`);
   }
 
+  const seen = new Uint8Array(totalTiles);
+  for (let i = 0; i < totalTiles; i++) {
+    const val = tiles[i];
+    if (!Number.isInteger(val) || val < 0 || val >= totalTiles) {
+      throw new Error(`Tile at index ${i} has invalid value: ${val}`);
+    }
+    if (seen[val] === 1) {
+      throw new Error(`Duplicate tile value: ${val}`);
+    }
+    seen[val] = 1;
+  }
+
   return Object.freeze({
     size,
     n: size,
@@ -53,8 +65,11 @@ export function getBlankIndex(board: Board): number {
  */
 export function isSolved(board: Board): boolean {
   const n = board.size ?? board.n;
+  if (!Number.isInteger(n) || n < 2) {
+    return false;
+  }
   const total = n * n;
-  if (board.tiles.length !== total) {
+  if (!board.tiles || board.tiles.length !== total) {
     return false;
   }
   for (let i = 0; i < total - 1; i++) {
@@ -71,6 +86,13 @@ export function isSolved(board: Board): boolean {
  */
 export function getMovableTiles(board: Board): number[] {
   const n = board.size ?? board.n;
+  if (!Number.isInteger(n) || n < 2) {
+    return [];
+  }
+  const total = n * n;
+  if (!board.tiles || board.tiles.length !== total) {
+    return [];
+  }
   const blankIdx = getBlankIndex(board);
   if (blankIdx === -1) {
     return [];
@@ -80,7 +102,7 @@ export function getMovableTiles(board: Board): number[] {
   const blankCol = blankIdx % n;
   const movable: number[] = [];
 
-  for (let i = 0; i < board.tiles.length; i++) {
+  for (let i = 0; i < total; i++) {
     if (i === blankIdx) {
       continue;
     }
@@ -117,7 +139,13 @@ export function getMovableTileValues(board: Board): number[] {
  */
 export function moveTile(board: Board, index: number): Board {
   const n = board.size ?? board.n;
+  if (!Number.isInteger(n) || n < 2) {
+    return board;
+  }
   const total = n * n;
+  if (!board.tiles || board.tiles.length !== total) {
+    return board;
+  }
 
   if (!Number.isInteger(index) || index < 0 || index >= total) {
     return board;

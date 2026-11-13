@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { Board } from '../../src/core/types';
 import {
   createBoard,
   createSolved,
@@ -35,6 +36,17 @@ describe('Board creation & basic queries', () => {
     expect(() => createBoard(3, [1, 2, 3, 4, 5, 6, 7, 8])).toThrow();
   });
 
+  it('rejects duplicate, negative, out-of-range, and non-integer tiles in createBoard', () => {
+    // Duplicate tile
+    expect(() => createBoard(3, [1, 1, 2, 3, 4, 5, 6, 7, 0])).toThrow(/Duplicate/);
+    // Missing 0 (out of range tile 9)
+    expect(() => createBoard(3, [1, 2, 3, 4, 5, 6, 7, 8, 9])).toThrow(/invalid value/);
+    // Negative tile
+    expect(() => createBoard(3, [-1, 1, 2, 3, 4, 5, 6, 7, 8])).toThrow(/invalid value/);
+    // Float tile
+    expect(() => createBoard(3, [0.5, 1, 2, 3, 4, 5, 6, 7, 8])).toThrow(/invalid value/);
+  });
+
   it('freezes board and tiles to prevent mutation', () => {
     const b = createSolved(3);
     expect(Object.isFrozen(b)).toBe(true);
@@ -58,6 +70,10 @@ describe('Board creation & basic queries', () => {
 
     const blankMoved = createBoard(3, [1, 2, 3, 4, 5, 6, 7, 0, 8]);
     expect(isSolved(blankMoved)).toBe(false);
+
+    // Invalid / malformed board objects
+    expect(isSolved({ size: 1, n: 1, tiles: [0] } as unknown as Board)).toBe(false);
+    expect(isSolved({ size: 3, n: 3, tiles: [1, 2, 3] } as unknown as Board)).toBe(false);
   });
 });
 
@@ -98,6 +114,34 @@ describe('getMovableTiles', () => {
     // Row 0: index 1, index 2
     // Col 0: index 3, index 6
     expect(movable.sort()).toEqual([1, 2, 3, 6]);
+  });
+
+  it('returns correct movable tiles when blank is at top-right corner (0, N-1)', () => {
+    // 1 2 0
+    // 3 4 5
+    // 6 7 8
+    const b = createBoard(3, [1, 2, 0, 3, 4, 5, 6, 7, 8]);
+    const movable = getMovableTiles(b);
+    // Row 0: index 0, 1
+    // Col 2: index 5, 8
+    expect(movable.sort()).toEqual([0, 1, 5, 8]);
+  });
+
+  it('returns correct movable tiles when blank is at bottom-left corner (N-1, 0)', () => {
+    // 1 2 3
+    // 4 5 6
+    // 0 7 8
+    const b = createBoard(3, [1, 2, 3, 4, 5, 6, 0, 7, 8]);
+    const movable = getMovableTiles(b);
+    // Row 2: index 7, 8
+    // Col 0: index 0, 3
+    expect(movable.sort()).toEqual([0, 3, 7, 8]);
+  });
+
+  it('returns empty array for getMovableTiles when board is invalid or has no blank', () => {
+    expect(getMovableTiles({ size: 1, n: 1, tiles: [0] } as unknown as Board)).toEqual([]);
+    expect(getMovableTiles({ size: 3, n: 3, tiles: [1, 2, 3] } as unknown as Board)).toEqual([]);
+    expect(getMovableTiles({ size: 2, n: 2, tiles: [1, 2, 3, 4] } as unknown as Board)).toEqual([]);
   });
 
   it('returns 2*(N-1) movable tiles on any N x N board', () => {
@@ -242,5 +286,25 @@ describe('moveTile multi-tile sliding', () => {
     expect(next.tiles[4]).toBe(1);
     expect(next.tiles[8]).toBe(5);
     expect(next.tiles[12]).toBe(9);
+  });
+
+  it('slides 4 tiles at once on 5x5 board horizontally', () => {
+    // Solved 5x5 has blank at index 24 (row 4, col 4).
+    // Click index 20 (row 4, col 0). Tiles 21, 22, 23, 24 (values 21, 22, 23, 24) shift right!
+    const b5 = createSolved(5);
+    const next = moveTile(b5, 20);
+
+    // Row 4 was: [21, 22, 23, 24, 0]
+    // After clicking 20: [0, 21, 22, 23, 24]
+    expect(next.tiles.slice(20, 25)).toEqual([0, 21, 22, 23, 24]);
+    expect(next.tiles.slice(0, 20)).toEqual(b5.tiles.slice(0, 20));
+  });
+
+  it('returns original board on invalid board in moveTile', () => {
+    const invalidBoard = { size: 1, n: 1, tiles: [0] } as unknown as Board;
+    expect(moveTile(invalidBoard, 0)).toBe(invalidBoard);
+
+    const noBlank = { size: 2, n: 2, tiles: [1, 2, 3, 4] } as unknown as Board;
+    expect(moveTile(noBlank, 1)).toBe(noBlank);
   });
 });

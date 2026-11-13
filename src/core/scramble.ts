@@ -22,9 +22,10 @@ export function scrambleBoard(
       ? createSolved(boardOrSize)
       : boardOrSize;
 
-  if (steps <= 0) {
+  if (!Number.isFinite(steps) || steps <= 0) {
     return currentBoard;
   }
+  const totalSteps = Math.floor(steps);
 
   const prng: PRNG =
     typeof seedOrPrng === 'number'
@@ -36,7 +37,7 @@ export function scrambleBoard(
   let board = currentBoard;
   let previousBlankIndex = -1;
 
-  for (let step = 0; step < steps; step++) {
+  for (let step = 0; step < totalSteps; step++) {
     const currentBlankIndex = getBlankIndex(board);
     const movable = getMovableTiles(board);
 

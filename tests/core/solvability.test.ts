@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { countInversions, isSolvable } from '../../src/core/solvability';
-import { createSolved, createBoard } from '../../src/core/board';
+import { createSolved, createBoard, moveTile, getMovableTiles } from '../../src/core/board';
 
 describe('countInversions', () => {
   it('returns 0 for solved sequences', () => {
@@ -104,6 +104,116 @@ describe('isSolvable on even boards (N = 4)', () => {
       12, 13, 15, 14,
     ];
     expect(isSolvable(createBoard(4, tiles))).toBe(true);
+  });
+
+  it('correctly validates classic 15-puzzle literature instances', () => {
+    // 49 inversions (odd), blank on row 2 from bottom (even) -> solvable
+    const gfgSolvable = createBoard(4, [12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3]);
+    expect(isSolvable(gfgSolvable)).toBe(true);
+
+    // 32 inversions (even), blank on row 1 from bottom (odd) -> solvable
+    const gfgSolvable2 = createBoard(4, [3, 9, 1, 10, 13, 6, 4, 7, 2, 11, 5, 12, 0, 8, 14, 15]);
+    expect(isSolvable(gfgSolvable2)).toBe(true);
+  });
+});
+
+describe('isSolvable on 2x2 boards (exhaustive)', () => {
+  it('exactly matches the 12 reachable states from BFS of 2x2', () => {
+    // BFS all reachable states starting from solved [1, 2, 3, 0]
+    const start = [1, 2, 3, 0];
+    const visited = new Set<string>();
+    const queue: number[][] = [start];
+    visited.add(start.join(','));
+
+    while (queue.length > 0) {
+      const curr = queue.shift()!;
+      const blank = curr.indexOf(0);
+      const r = Math.floor(blank / 2);
+      const c = blank % 2;
+      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < 2 && nc >= 0 && nc < 2) {
+          const nblank = nr * 2 + nc;
+          const copy = [...curr];
+          copy[blank] = copy[nblank];
+          copy[nblank] = 0;
+          const key = copy.join(',');
+          if (!visited.has(key)) {
+            visited.add(key);
+            queue.push(copy);
+          }
+        }
+      }
+    }
+
+    expect(visited.size).toBe(12); // Exactly 4! / 2 = 12 solvable states
+
+    function permute(arr: number[]): number[][] {
+      if (arr.length <= 1) return [arr];
+      const res: number[][] = [];
+      for (let i = 0; i < arr.length; i++) {
+        const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+        for (const p of permute(rest)) {
+          res.push([arr[i], ...p]);
+        }
+      }
+      return res;
+    }
+
+    const all24Perms = permute([0, 1, 2, 3]);
+    expect(all24Perms.length).toBe(24);
+
+    for (const p of all24Perms) {
+      const board = createBoard(2, p);
+      const solvable = isSolvable(board);
+      const reachable = visited.has(p.join(','));
+      expect(solvable).toBe(reachable);
+    }
+  });
+});
+
+describe('isSolvable on larger dimensions (N = 5, N = 6)', () => {
+  it('correctly determines solvability on 5x5 board', () => {
+    const solved5 = createSolved(5);
+    expect(isSolvable(solved5)).toBe(true);
+
+    // Swap tiles 1 and 2 -> 1 inversion (odd) on odd board -> unsolvable
+    const tiles = [...solved5.tiles];
+    tiles[0] = 2;
+    tiles[1] = 1;
+    const unsolvable5 = createBoard(5, tiles);
+    expect(isSolvable(unsolvable5)).toBe(false);
+  });
+
+  it('correctly determines solvability on 6x6 board', () => {
+    const solved6 = createSolved(6);
+    expect(isSolvable(solved6)).toBe(true);
+
+    // Swap tiles 1 and 2 on bottom row (inversions = 1, blank on row 1 from bottom) -> unsolvable
+    const tiles = [...solved6.tiles];
+    tiles[0] = 2;
+    tiles[1] = 1;
+    const unsolvable6 = createBoard(6, tiles);
+    expect(isSolvable(unsolvable6)).toBe(false);
+  });
+});
+
+describe('isSolvable invariance under moveTile moves', () => {
+  it('maintains solvability after multiple random moves including multi-tile slides', () => {
+    for (const n of [3, 4, 5]) {
+      let board = createSolved(n);
+      expect(isSolvable(board)).toBe(true);
+
+      for (let i = 0; i < 50; i++) {
+        const movable = getMovableTiles(board);
+        const pick = movable[i % movable.length];
+        board = moveTile(board, pick);
+        expect(isSolvable(board)).toBe(true);
+      }
+    }
   });
 });
 

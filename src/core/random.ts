@@ -2,13 +2,14 @@ import type { PRNG } from './types';
 
 /**
  * Creates a deterministic Mulberry32 pseudo-random number generator.
- * Mulberry32 is a simple 32-bit PRNG with great distribution and high performance.
+ * Mulberry32 is a 32-bit PRNG with good distribution and high performance.
+ * Every 32-bit integer seed (including 0) generates a distinct sequence.
  *
  * @param seed - 32-bit integer seed value
  * @returns PRNG function returning a floating-point number in [0, 1)
  */
 export function createMulberry32(seed: number): PRNG {
-  let s = (Math.floor(seed) >>> 0) || 1;
+  let s = Math.floor(seed) >>> 0;
   return function mulberry32(): number {
     s = (s + 0x6d2b79f5) >>> 0;
     let t = Math.imul(s ^ (s >>> 15), 1 | s);
@@ -25,6 +26,9 @@ export function createMulberry32(seed: number): PRNG {
  * @param max - Maximum integer (inclusive)
  */
 export function randomInt(prng: PRNG, min: number, max: number): number {
+  if (!Number.isInteger(min) || !Number.isInteger(max)) {
+    throw new Error(`min (${min}) and max (${max}) must be integers`);
+  }
   if (min > max) {
     throw new Error(`min (${min}) cannot be greater than max (${max})`);
   }

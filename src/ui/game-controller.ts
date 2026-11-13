@@ -18,9 +18,10 @@ import { KeyboardHandler } from './input/keyboard-handler';
 import { getLevel, createLevelBoard } from '../levels/level-manager';
 import { evaluateStars } from '../levels/star-evaluator';
 import { StorageManager, defaultStorage } from '../storage/storage-manager';
-import type { WoodTheme } from '../storage/types';
+import type { BoardTheme } from '../storage/types';
 import { SolverClient, defaultSolverClient } from '../solver';
 import { SoundSynthesizer } from '../audio';
+import { HapticFeedback } from '../haptics';
 import { PictureManager } from '../picture';
 import { MenuModalView } from './components/menu-modal-view';
 import { SettingsModalView } from './components/settings-modal-view';
@@ -40,6 +41,7 @@ export interface GameControllerOptions {
   storageManager?: StorageManager;
   solverClient?: SolverClient;
   soundSynthesizer?: SoundSynthesizer;
+  hapticFeedback?: HapticFeedback;
   pictureManager?: PictureManager;
   initialMode?: GameMode;
   initialLevel?: number;
@@ -51,6 +53,7 @@ export class GameController {
   private readonly storageManager: StorageManager;
   private readonly solverClient: SolverClient;
   private readonly soundSynthesizer: SoundSynthesizer;
+  private readonly hapticFeedback: HapticFeedback;
   private readonly pictureManager: PictureManager;
   private layoutManager!: LayoutManager;
   private boardView!: BoardView;
@@ -92,6 +95,8 @@ export class GameController {
     this.solverClient = options.solverClient ?? defaultSolverClient;
     this.soundSynthesizer =
       options.soundSynthesizer ?? new SoundSynthesizer({ storageManager: this.storageManager });
+    this.hapticFeedback =
+      options.hapticFeedback ?? new HapticFeedback({ storageManager: this.storageManager });
     this.pictureManager =
       options.pictureManager ?? new PictureManager(this.storageManager);
     this.mode = options.initialMode ?? 'campaign';
@@ -103,6 +108,11 @@ export class GameController {
       (this.mode === 'campaign' ? (getLevel(this.currentLevelId)?.size ?? 3) : 3);
 
     this.init();
+  }
+
+  private playButtonClick(): void {
+    this.soundSynthesizer.playButtonClick();
+    this.hapticFeedback.vibrateButton();
   }
 
   private init(): void {
@@ -145,44 +155,44 @@ export class GameController {
         isPictureMode: this.pictureManager.isEnabled(),
         onUndo: () => this.undo(),
         onRestart: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.restartGame();
         },
         onScramble: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.startNewGame();
         },
         onHint: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           void this.requestHint();
         },
         onAutoSolve: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           void this.toggleAutoSolve();
         },
         onSizeChange: (size) => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.changeSize(size);
         },
         onOpenLevelSelect: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.openLevelSelect();
         },
         onSwitchMode: (nextMode) => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.setMode(nextMode);
         },
         onOpenMenu: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.openMainMenu();
         },
         onToggleSound: () => this.toggleSound(),
         onOpenSettings: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.openSettings();
         },
         onPreviewPicture: () => {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
           this.openPicturePreview();
         },
       }
@@ -190,38 +200,38 @@ export class GameController {
 
     this.modalView = new ModalView(this.elements.root, {
       onRestart: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.restartGame();
       },
       onNewGame: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.startNewGame();
       },
       onNextLevel: (nextLevelId) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.loadLevel(nextLevelId);
       },
       onOpenLevelSelect: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.openLevelSelect();
       },
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.modalView.close();
       },
     });
 
     this.levelSelectView = new LevelSelectView(this.elements.root, {
       onSelectLevel: (lvlId) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.loadLevel(lvlId);
       },
       onSwitchToFreePlay: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.startFreePlay(this.size);
       },
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.levelSelectView.close();
         if (this.status === 'playing') {
           this.startTimer();
@@ -231,27 +241,27 @@ export class GameController {
 
     this.menuModalView = new MenuModalView(this.elements.root, {
       onSelectCampaign: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.openLevelSelect();
       },
       onSelectFreePlay: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.startFreePlay(this.size);
       },
       onSelectPictureMode: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.openPictureSelector();
       },
       onOpenSettings: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.openSettings();
       },
       onOpenHowToPlay: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.openHowToPlay();
       },
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -262,40 +272,47 @@ export class GameController {
         this.soundSynthesizer.setSoundEnabled(enabled);
         this.hudView.setSoundEnabled(enabled);
         if (enabled) {
-          this.soundSynthesizer.playButtonClick();
+          this.playButtonClick();
+        }
+      },
+      onHapticChange: (enabled) => {
+        this.hapticFeedback.setEnabled(enabled);
+        this.storageManager.updateSettings({ hapticEnabled: enabled });
+        if (enabled) {
+          this.hapticFeedback.vibrateButton();
         }
       },
       onThemeChange: (theme) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.setTheme(theme);
       },
       onAnimationChange: (enabled) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.setAnimationEnabled(enabled);
       },
       onPictureModeChange: (enabled) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.setPictureMode(enabled);
       },
       onPictureNumbersChange: (enabled) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.pictureManager.setNumbersVisible(enabled);
         this.boardView.render(this.board, { animate: false });
       },
       onResetProgress: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.storageManager.resetAll();
         this.loadLevel(1);
       },
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
 
     this.howToPlayModalView = new HowToPlayModalView(this.elements.root, {
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -304,25 +321,25 @@ export class GameController {
       pictureManager: this.pictureManager,
       gridSize: this.size,
       onSelectPreset: (presetId) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.pictureManager.selectPreset(presetId);
         this.setPictureMode(true);
       },
       onUploadCustom: (dataUrl) => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.pictureManager.setCustomImage(dataUrl);
         this.setPictureMode(true);
       },
       onApply: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.setPictureMode(true);
       },
       onDisablePictureMode: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.setPictureMode(false);
       },
       onClose: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -356,15 +373,15 @@ export class GameController {
       },
       onUndo: () => this.undo(),
       onRestart: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         this.restartGame();
       },
       onHint: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         void this.requestHint();
       },
       onEscape: () => {
-        this.soundSynthesizer.playButtonClick();
+        this.playButtonClick();
         if (this.modalView.isOpen()) {
           this.modalView.close();
         } else if (this.levelSelectView.isOpen()) {
@@ -593,12 +610,12 @@ export class GameController {
     const nextState = this.soundSynthesizer.toggleMute();
     this.hudView.setSoundEnabled(nextState);
     if (nextState) {
-      this.soundSynthesizer.playButtonClick();
+      this.playButtonClick();
     }
     return nextState;
   }
 
-  public setTheme(theme: WoodTheme): void {
+  public setTheme(theme: BoardTheme): void {
     if (typeof document !== 'undefined' && document.body) {
       document.body.setAttribute('data-theme', theme);
     }
@@ -622,6 +639,10 @@ export class GameController {
 
   public getSoundSynthesizer(): SoundSynthesizer {
     return this.soundSynthesizer;
+  }
+
+  public getHapticFeedback(): HapticFeedback {
+    return this.hapticFeedback;
   }
 
   public getPictureManager(): PictureManager {
@@ -670,6 +691,18 @@ export class GameController {
       this.startTimer();
     }
 
+    // Check if any moving tile snapped into its solved home position
+    let hasSnapped = false;
+    for (let i = 0; i < nextBoard.tiles.length; i++) {
+      const tileVal = nextBoard.tiles[i];
+      if (tileVal !== 0 && tileVal !== this.board.tiles[i]) {
+        if (tileVal === i + 1) {
+          hasSnapped = true;
+          break;
+        }
+      }
+    }
+
     // Record previous state for Undo
     this.boardRevision += 1;
     this.history.push(this.board);
@@ -688,6 +721,10 @@ export class GameController {
     // Check win condition
     if (isSolved(this.board)) {
       this.handleVictory();
+    } else if (hasSnapped) {
+      this.hapticFeedback.vibrateSnap();
+    } else {
+      this.hapticFeedback.vibrateSlide();
     }
 
     return true;
@@ -802,6 +839,7 @@ export class GameController {
     this.hudView.setMoves(this.moves);
     this.hudView.setCanUndo(this.history.length > 0);
     this.soundSynthesizer.playUndo();
+    this.hapticFeedback.vibrateSlide();
 
     return true;
   }
@@ -812,8 +850,9 @@ export class GameController {
     this.stopAutoSolve();
     this.boardView.clearHint();
 
-    // Play triumphant victory chime
+    // Play triumphant victory chime & haptic fanfare
     this.soundSynthesizer.playVictory();
+    this.hapticFeedback.vibrateVictory();
 
     const mins = Math.floor(this.elapsedSeconds / 60);
     const secs = this.elapsedSeconds % 60;
@@ -1089,6 +1128,7 @@ export class GameController {
     this.stopAutoSolve();
     this.solverClient.destroy();
     this.soundSynthesizer.destroy();
+    this.hapticFeedback.destroy();
     this.stopTimer();
     this.layoutManager.destroy();
     this.pointerHandler.destroy();

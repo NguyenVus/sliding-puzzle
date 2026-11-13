@@ -58,6 +58,7 @@ describe('UI Modals Suite', () => {
   describe('SettingsModalView', () => {
     it('manages sound toggle, themes, animations, and picture numbers', () => {
       const onSoundChange = vi.fn();
+      const onHapticChange = vi.fn();
       const onThemeChange = vi.fn();
       const onAnimationChange = vi.fn();
       const onPictureModeChange = vi.fn();
@@ -67,6 +68,7 @@ describe('UI Modals Suite', () => {
       const settingsModal = new SettingsModalView(container, {
         storageManager: storage,
         onSoundChange,
+        onHapticChange,
         onThemeChange,
         onAnimationChange,
         onPictureModeChange,
@@ -86,6 +88,18 @@ describe('UI Modals Suite', () => {
       lightBtn?.click();
       expect(onThemeChange).toHaveBeenCalledWith('wood-light');
 
+      const marbleBtn = container.querySelector<HTMLButtonElement>('#theme-btn-marble');
+      marbleBtn?.click();
+      expect(onThemeChange).toHaveBeenCalledWith('marble-gold');
+
+      const tatamiBtn = container.querySelector<HTMLButtonElement>('#theme-btn-tatami');
+      tatamiBtn?.click();
+      expect(onThemeChange).toHaveBeenCalledWith('tatami-sakura');
+
+      const neonBtn = container.querySelector<HTMLButtonElement>('#theme-btn-neon');
+      neonBtn?.click();
+      expect(onThemeChange).toHaveBeenCalledWith('neon-cyberpunk');
+
       // Picture mode toggle
       const picModeToggle = container.querySelector<HTMLInputElement>('#setting-toggle-pic-mode');
       if (picModeToggle) {
@@ -100,6 +114,14 @@ describe('UI Modals Suite', () => {
         soundToggle.checked = false;
         soundToggle.dispatchEvent(new Event('change'));
         expect(onSoundChange).toHaveBeenCalledWith(false);
+      }
+
+      // Haptic toggle
+      const hapticToggle = container.querySelector<HTMLInputElement>('#setting-toggle-haptic');
+      if (hapticToggle) {
+        hapticToggle.checked = false;
+        hapticToggle.dispatchEvent(new Event('change'));
+        expect(onHapticChange).toHaveBeenCalledWith(false);
       }
 
       // Animation toggle

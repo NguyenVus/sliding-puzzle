@@ -1,10 +1,11 @@
 import type { StorageManager } from '../../storage/storage-manager';
-import type { WoodTheme } from '../../storage/types';
+import type { BoardTheme } from '../../storage/types';
 
 export interface SettingsModalViewOptions {
   storageManager: StorageManager;
   onSoundChange: (enabled: boolean) => void;
-  onThemeChange: (theme: WoodTheme) => void;
+  onHapticChange?: (enabled: boolean) => void;
+  onThemeChange: (theme: BoardTheme) => void;
   onAnimationChange: (enabled: boolean) => void;
   onPictureModeChange?: (enabled: boolean) => void;
   onPictureNumbersChange: (enabled: boolean) => void;
@@ -66,29 +67,68 @@ export class SettingsModalView {
             </label>
           </div>
 
+          <!-- Haptic Feedback -->
+          <div class="setting-item-row">
+            <div class="setting-item-label">
+              <span class="setting-icon" id="haptic-status-icon">${currentSettings.hapticEnabled ? '📳' : '📴'}</span>
+              <div>
+                <span class="setting-title">Rung phản hồi (Haptic)</span>
+                <span class="setting-desc">Cảm giác xúc giác khi trượt ô và chạm nút (Mobile)</span>
+              </div>
+            </div>
+            <label class="toggle-switch" aria-label="Bật/Tắt rung phản hồi">
+              <input type="checkbox" id="setting-toggle-haptic" ${currentSettings.hapticEnabled ? 'checked' : ''} />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
           <!-- Theme -->
           <div class="setting-item-col">
             <div class="setting-item-label">
               <span class="setting-icon">🎨</span>
               <div>
                 <span class="setting-title">Giao diện bàn cờ</span>
-                <span class="setting-desc">Chọn chất liệu gỗ yêu thích</span>
+                <span class="setting-desc">Chọn phong cách và chất liệu yêu thích</span>
               </div>
             </div>
-            <div class="theme-picker-group" role="radiogroup" aria-label="Chọn chủ đề gỗ">
+            <div class="theme-picker-group" role="radiogroup" aria-label="Chọn chủ đề bàn cờ">
               <button type="button" id="theme-btn-light" class="theme-choice-btn ${currentSettings.theme === 'wood-light' ? 'active' : ''}" data-theme="wood-light" aria-checked="${currentSettings.theme === 'wood-light'}">
-                <span class="theme-sample wood-light-sample">🪵</span>
+                <span class="theme-sample wood-light-sample">🌲</span>
                 <div class="theme-info">
-                  <span class="theme-name">Gỗ Sáng (Sồi / Birch)</span>
-                  <span class="theme-desc">Trang nhã, ấm áp, tinh tế</span>
+                  <span class="theme-name">Gỗ Sáng (Wood Light)</span>
+                  <span class="theme-desc">Trang nhã, ấm áp, thanh lịch</span>
                 </div>
               </button>
 
               <button type="button" id="theme-btn-dark" class="theme-choice-btn ${currentSettings.theme === 'wood-dark' ? 'active' : ''}" data-theme="wood-dark" aria-checked="${currentSettings.theme === 'wood-dark'}">
                 <span class="theme-sample wood-dark-sample">🪵</span>
                 <div class="theme-info">
-                  <span class="theme-name">Gỗ Tối (Walnut / Óc chó)</span>
+                  <span class="theme-name">Gỗ Óc Chó (Wood Dark)</span>
                   <span class="theme-desc">Cổ điển, sang trọng, tương phản cao</span>
+                </div>
+              </button>
+
+              <button type="button" id="theme-btn-marble" class="theme-choice-btn ${currentSettings.theme === 'marble-gold' ? 'active' : ''}" data-theme="marble-gold" aria-checked="${currentSettings.theme === 'marble-gold'}">
+                <span class="theme-sample marble-gold-sample">🏛️</span>
+                <div class="theme-info">
+                  <span class="theme-name">Cẩm Thạch Vàng (Marble & Gold)</span>
+                  <span class="theme-desc">Đá trắng vân mây, mạ vàng ánh kim hoàng gia</span>
+                </div>
+              </button>
+
+              <button type="button" id="theme-btn-tatami" class="theme-choice-btn ${currentSettings.theme === 'tatami-sakura' ? 'active' : ''}" data-theme="tatami-sakura" aria-checked="${currentSettings.theme === 'tatami-sakura'}">
+                <span class="theme-sample tatami-sakura-sample">🌸</span>
+                <div class="theme-info">
+                  <span class="theme-name">Tatami Anh Đào (Tatami & Sakura)</span>
+                  <span class="theme-desc">Chiếu cói truyền thống, thông & đỏ sakura</span>
+                </div>
+              </button>
+
+              <button type="button" id="theme-btn-neon" class="theme-choice-btn ${currentSettings.theme === 'neon-cyberpunk' ? 'active' : ''}" data-theme="neon-cyberpunk" aria-checked="${currentSettings.theme === 'neon-cyberpunk'}">
+                <span class="theme-sample neon-cyberpunk-sample">🌌</span>
+                <div class="theme-info">
+                  <span class="theme-name">Neon Cyberpunk (Dark Glow)</span>
+                  <span class="theme-desc">Kính mờ bóng tối, viền LED xanh ngọc & tím hồng</span>
                 </div>
               </button>
             </div>
@@ -185,24 +225,37 @@ export class SettingsModalView {
       this.options.onSoundChange(enabled);
     });
 
-    // Theme buttons
-    const lightBtn = this.modalEl.querySelector<HTMLButtonElement>('#theme-btn-light');
-    const darkBtn = this.modalEl.querySelector<HTMLButtonElement>('#theme-btn-dark');
-
-    lightBtn?.addEventListener('click', () => {
-      lightBtn.classList.add('active');
-      lightBtn.setAttribute('aria-checked', 'true');
-      darkBtn?.classList.remove('active');
-      darkBtn?.setAttribute('aria-checked', 'false');
-      this.options.onThemeChange('wood-light');
+    // Haptic toggle
+    const hapticToggle = this.modalEl.querySelector<HTMLInputElement>('#setting-toggle-haptic');
+    const hapticIcon = this.modalEl.querySelector<HTMLElement>('#haptic-status-icon');
+    hapticToggle?.addEventListener('change', () => {
+      const enabled = hapticToggle.checked;
+      if (hapticIcon) hapticIcon.textContent = enabled ? '📳' : '📴';
+      this.options.onHapticChange?.(enabled);
     });
 
-    darkBtn?.addEventListener('click', () => {
-      darkBtn.classList.add('active');
-      darkBtn.setAttribute('aria-checked', 'true');
-      lightBtn?.classList.remove('active');
-      lightBtn?.setAttribute('aria-checked', 'false');
-      this.options.onThemeChange('wood-dark');
+    // Theme buttons
+    const themeButtons: Array<{ id: string; theme: BoardTheme }> = [
+      { id: 'theme-btn-light', theme: 'wood-light' },
+      { id: 'theme-btn-dark', theme: 'wood-dark' },
+      { id: 'theme-btn-marble', theme: 'marble-gold' },
+      { id: 'theme-btn-tatami', theme: 'tatami-sakura' },
+      { id: 'theme-btn-neon', theme: 'neon-cyberpunk' },
+    ];
+
+    themeButtons.forEach(({ id, theme }) => {
+      const btn = this.modalEl?.querySelector<HTMLButtonElement>(`#${id}`);
+      btn?.addEventListener('click', () => {
+        themeButtons.forEach(({ id: otherId }) => {
+          const otherBtn = this.modalEl?.querySelector<HTMLButtonElement>(`#${otherId}`);
+          if (otherBtn) {
+            const isActive = otherId === id;
+            otherBtn.classList.toggle('active', isActive);
+            otherBtn.setAttribute('aria-checked', String(isActive));
+          }
+        });
+        this.options.onThemeChange(theme);
+      });
     });
 
     // Animation toggle

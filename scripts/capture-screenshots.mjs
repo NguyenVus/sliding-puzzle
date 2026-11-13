@@ -376,6 +376,78 @@ async function run() {
     console.log(`📸 Saved screenshot: ${path.basename(picturePreviewPath)}`);
     await p5Page.click('#picture-btn-done');
 
+    // 7. Capture Settings Modal (Showing Haptics & 5 Luxury Themes)
+    console.log('\n🎨 Capturing Settings Modal and New Themes screenshots...');
+    await p5Page.setViewportSize({ width: 375, height: 667 });
+    await p5Page.click('#btn-settings');
+    await p5Page.waitForSelector('.settings-modal-card');
+    await p5Page.waitForTimeout(200);
+
+    // Disable picture mode to showcase classic luxury theme tiles
+    const picModeToggle = p5Page.locator('#setting-toggle-pic-mode');
+    if (await picModeToggle.isChecked()) {
+      await picModeToggle.uncheck();
+    }
+    await p5Page.evaluate(() => document.querySelector('.settings-body-list')?.scrollTo(0, 0));
+    await p5Page.waitForTimeout(100);
+
+    const settingsThemesPath = path.join(screenshotsDir, 'settings_modal_themes_and_haptics_mobile.png');
+    await p5Page.screenshot({ path: settingsThemesPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(settingsThemesPath)}`);
+
+    // 7a. Switch to Marble & Gold Theme (Mobile & Desktop)
+    await p5Page.click('#theme-btn-marble');
+    await p5Page.click('#settings-btn-done');
+    await p5Page.waitForTimeout(200);
+    const marbleMobilePath = path.join(screenshotsDir, 'theme_marble_gold_mobile.png');
+    await p5Page.screenshot({ path: marbleMobilePath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(marbleMobilePath)}`);
+
+    await p5Page.setViewportSize({ width: 1440, height: 900 });
+    await p5Page.waitForTimeout(200);
+    const marbleDeskPath = path.join(screenshotsDir, 'theme_marble_gold_desktop.png');
+    await p5Page.screenshot({ path: marbleDeskPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(marbleDeskPath)}`);
+
+    // 7b. Switch to Tatami & Sakura Theme (Mobile & Desktop)
+    await p5Page.click('#btn-settings');
+    await p5Page.waitForSelector('.settings-modal-card');
+    await p5Page.click('#theme-btn-tatami');
+    await p5Page.click('#settings-btn-done');
+    await p5Page.waitForTimeout(200);
+    const tatamiDeskPath = path.join(screenshotsDir, 'theme_tatami_sakura_desktop.png');
+    await p5Page.screenshot({ path: tatamiDeskPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(tatamiDeskPath)}`);
+
+    await p5Page.setViewportSize({ width: 375, height: 667 });
+    await p5Page.waitForTimeout(200);
+    const tatamiMobilePath = path.join(screenshotsDir, 'theme_tatami_sakura_mobile.png');
+    await p5Page.screenshot({ path: tatamiMobilePath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(tatamiMobilePath)}`);
+
+    // 7c. Switch to Neon Cyberpunk Theme (Mobile & Desktop)
+    await p5Page.click('#btn-settings');
+    await p5Page.waitForSelector('.settings-modal-card');
+    await p5Page.click('#theme-btn-neon');
+    await p5Page.click('#settings-btn-done');
+    await p5Page.waitForTimeout(200);
+    const neonMobilePath = path.join(screenshotsDir, 'theme_neon_cyberpunk_mobile.png');
+    await p5Page.screenshot({ path: neonMobilePath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(neonMobilePath)}`);
+
+    await p5Page.setViewportSize({ width: 1440, height: 900 });
+    await p5Page.waitForTimeout(200);
+    const neonDeskPath = path.join(screenshotsDir, 'theme_neon_cyberpunk_desktop.png');
+    await p5Page.screenshot({ path: neonDeskPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(neonDeskPath)}`);
+
     await p5Page.close();
   } finally {
     await browser.close();

@@ -386,4 +386,46 @@ describe('GameController', () => {
       slideSpy.mockRestore();
     });
   });
+
+  describe('Haptic feedback & Theme switching integration', () => {
+    it('supports switching across all 5 themes and persists in storage', () => {
+      const themes = [
+        'wood-light',
+        'wood-dark',
+        'marble-gold',
+        'tatami-sakura',
+        'neon-cyberpunk',
+      ] as const;
+
+      for (const theme of themes) {
+        controller.setTheme(theme);
+        expect(document.body.getAttribute('data-theme')).toBe(theme);
+        expect(controller.getStorageManager().getSettings().theme).toBe(theme);
+      }
+    });
+
+    it('triggers haptics on move, victory, and button interaction', () => {
+      const haptics = controller.getHapticFeedback();
+      const slideSpy = vi.spyOn(haptics, 'vibrateSlide');
+      const snapSpy = vi.spyOn(haptics, 'vibrateSnap');
+      const victorySpy = vi.spyOn(haptics, 'vibrateVictory');
+      const buttonSpy = vi.spyOn(haptics, 'vibrateButton');
+
+      // Button click via toggleSound
+      controller.toggleSound();
+      controller.toggleSound();
+      expect(buttonSpy).toHaveBeenCalled();
+
+      // Make move
+      const board = controller.getBoard();
+      const blank = getBlankIndex(board);
+      const targetIndex = blank === 0 ? 1 : 0;
+      controller.makeMove(targetIndex);
+      expect(slideSpy.mock.calls.length + snapSpy.mock.calls.length).toBeGreaterThan(0);
+
+      // Force win state
+      controller.forceSolvedStateForTesting();
+      expect(victorySpy).toHaveBeenCalled();
+    });
+  });
 });

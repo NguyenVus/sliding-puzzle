@@ -1,10 +1,18 @@
 import type { StarRating } from '../levels/types';
 
-export type WoodTheme = 'wood-light' | 'wood-dark';
+export type BoardTheme =
+  | 'wood-light'
+  | 'wood-dark'
+  | 'marble-gold'
+  | 'tatami-sakura'
+  | 'neon-cyberpunk';
+
+export type WoodTheme = BoardTheme;
 
 export interface UserSettings {
   soundEnabled: boolean;
-  theme: WoodTheme;
+  hapticEnabled: boolean;
+  theme: BoardTheme;
   animationEnabled: boolean;
   pictureModeEnabled: boolean;
   pictureNumbersEnabled: boolean;

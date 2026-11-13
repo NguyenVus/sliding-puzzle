@@ -12,6 +12,7 @@ export const TOTAL_LEVELS = 30;
 
 export const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: true,
+  hapticEnabled: true,
   theme: 'wood-light',
   animationEnabled: true,
   pictureModeEnabled: false,

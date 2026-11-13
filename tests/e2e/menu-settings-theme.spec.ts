@@ -37,7 +37,7 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
     await expect(guideModal).not.toBeVisible();
   });
 
-  test('toggles themes between Wood Light and Wood Dark', async ({ page }) => {
+  test('toggles themes across all 5 luxury board themes', async ({ page }) => {
     // Default theme should be wood-light
     await expect(page.locator('body')).toHaveAttribute('data-theme', 'wood-light');
 
@@ -49,13 +49,31 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
     const settingsModal = page.locator('.settings-modal-card');
     await expect(settingsModal).toBeVisible();
 
-    // Switch to Dark Walnut
+    // 1. Switch to Dark Walnut
     const darkBtn = page.locator('#theme-btn-dark');
     await darkBtn.click();
     await expect(page.locator('body')).toHaveAttribute('data-theme', 'wood-dark');
     await expect(darkBtn).toHaveClass(/active/);
 
-    // Switch back to Light Wood
+    // 2. Switch to Marble & Gold
+    const marbleBtn = page.locator('#theme-btn-marble');
+    await marbleBtn.click();
+    await expect(page.locator('body')).toHaveAttribute('data-theme', 'marble-gold');
+    await expect(marbleBtn).toHaveClass(/active/);
+
+    // 3. Switch to Tatami & Sakura
+    const tatamiBtn = page.locator('#theme-btn-tatami');
+    await tatamiBtn.click();
+    await expect(page.locator('body')).toHaveAttribute('data-theme', 'tatami-sakura');
+    await expect(tatamiBtn).toHaveClass(/active/);
+
+    // 4. Switch to Neon Cyberpunk
+    const neonBtn = page.locator('#theme-btn-neon');
+    await neonBtn.click();
+    await expect(page.locator('body')).toHaveAttribute('data-theme', 'neon-cyberpunk');
+    await expect(neonBtn).toHaveClass(/active/);
+
+    // 5. Switch back to Light Wood
     const lightBtn = page.locator('#theme-btn-light');
     await lightBtn.click();
     await expect(page.locator('body')).toHaveAttribute('data-theme', 'wood-light');
@@ -64,6 +82,28 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
     // Close settings
     await page.locator('#settings-btn-done').click();
     await expect(settingsModal).not.toBeVisible();
+  });
+
+  test('toggles haptic feedback in Settings', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    const hapticToggle = page.locator('#setting-toggle-haptic');
+    const hapticIcon = page.locator('#haptic-status-icon');
+
+    // Initially checked
+    await expect(hapticToggle).toBeChecked();
+    await expect(hapticIcon).toHaveText('📳');
+
+    // Uncheck haptic feedback
+    await hapticToggle.uncheck();
+    await expect(hapticToggle).not.toBeChecked();
+    await expect(hapticIcon).toHaveText('📴');
+
+    // Re-check haptic feedback
+    await hapticToggle.check();
+    await expect(hapticToggle).toBeChecked();
+    await expect(hapticIcon).toHaveText('📳');
+
+    await page.locator('#settings-btn-done').click();
   });
 
   test('toggles sound on Top HUD and in Settings', async ({ page }) => {

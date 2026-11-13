@@ -159,4 +159,24 @@ describe('Storage System (src/storage)', () => {
     expect(rec2?.bestMoves).toBe(38);
     expect(rec2?.bestTimeSec).toBe(60);
   });
+
+  it('manages hapticEnabled and 5 board themes in user settings', () => {
+    const settings = storage.getSettings();
+    expect(settings.hapticEnabled).toBe(true);
+    expect(settings.theme).toBe('wood-light');
+
+    // Update to each new theme
+    storage.updateSettings({ theme: 'marble-gold', hapticEnabled: false });
+    expect(storage.getSettings().theme).toBe('marble-gold');
+    expect(storage.getSettings().hapticEnabled).toBe(false);
+
+    storage.updateSettings({ theme: 'tatami-sakura' });
+    expect(storage.getSettings().theme).toBe('tatami-sakura');
+
+    storage.updateSettings({ theme: 'neon-cyberpunk' });
+    expect(storage.getSettings().theme).toBe('neon-cyberpunk');
+
+    storage.updateSettings({ theme: 'wood-dark' });
+    expect(storage.getSettings().theme).toBe('wood-dark');
+  });
 });

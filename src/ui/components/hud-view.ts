@@ -235,7 +235,7 @@ export class HudView {
         this.setLevel(levelConfig);
       }
     } else {
-      if (sizeGroup) sizeGroup.style.display = 'flex';
+      if (sizeGroup) sizeGroup.style.display = 'grid';
       if (toggleText) toggleText.textContent = 'Cấp độ';
       if (scrambleText) scrambleText.textContent = 'Trộn mới';
 

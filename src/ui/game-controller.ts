@@ -262,33 +262,40 @@ export class GameController {
         this.soundSynthesizer.setSoundEnabled(enabled);
         this.hudView.setSoundEnabled(enabled);
         if (enabled) {
-          this.soundSynthesizer.playTileSlide();
+          this.soundSynthesizer.playButtonClick();
         }
       },
       onThemeChange: (theme) => {
+        this.soundSynthesizer.playButtonClick();
         this.setTheme(theme);
       },
       onAnimationChange: (enabled) => {
+        this.soundSynthesizer.playButtonClick();
         this.setAnimationEnabled(enabled);
       },
       onPictureModeChange: (enabled) => {
+        this.soundSynthesizer.playButtonClick();
         this.setPictureMode(enabled);
       },
       onPictureNumbersChange: (enabled) => {
+        this.soundSynthesizer.playButtonClick();
         this.pictureManager.setNumbersVisible(enabled);
         this.boardView.render(this.board, { animate: false });
       },
       onResetProgress: () => {
+        this.soundSynthesizer.playButtonClick();
         this.storageManager.resetAll();
         this.loadLevel(1);
       },
       onClose: () => {
+        this.soundSynthesizer.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
 
     this.howToPlayModalView = new HowToPlayModalView(this.elements.root, {
       onClose: () => {
+        this.soundSynthesizer.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -297,20 +304,25 @@ export class GameController {
       pictureManager: this.pictureManager,
       gridSize: this.size,
       onSelectPreset: (presetId) => {
+        this.soundSynthesizer.playButtonClick();
         this.pictureManager.selectPreset(presetId);
         this.setPictureMode(true);
       },
       onUploadCustom: (dataUrl) => {
+        this.soundSynthesizer.playButtonClick();
         this.pictureManager.setCustomImage(dataUrl);
         this.setPictureMode(true);
       },
       onApply: () => {
+        this.soundSynthesizer.playButtonClick();
         this.setPictureMode(true);
       },
       onDisablePictureMode: () => {
+        this.soundSynthesizer.playButtonClick();
         this.setPictureMode(false);
       },
       onClose: () => {
+        this.soundSynthesizer.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -343,11 +355,16 @@ export class GameController {
         this.makeDirectionalMove(direction);
       },
       onUndo: () => this.undo(),
-      onRestart: () => this.restartGame(),
+      onRestart: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.restartGame();
+      },
       onHint: () => {
+        this.soundSynthesizer.playButtonClick();
         void this.requestHint();
       },
       onEscape: () => {
+        this.soundSynthesizer.playButtonClick();
         if (this.modalView.isOpen()) {
           this.modalView.close();
         } else if (this.levelSelectView.isOpen()) {
@@ -576,7 +593,7 @@ export class GameController {
     const nextState = this.soundSynthesizer.toggleMute();
     this.hudView.setSoundEnabled(nextState);
     if (nextState) {
-      this.soundSynthesizer.playTileSlide();
+      this.soundSynthesizer.playButtonClick();
     }
     return nextState;
   }

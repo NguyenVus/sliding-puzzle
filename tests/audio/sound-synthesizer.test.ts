@@ -111,21 +111,29 @@ describe('SoundSynthesizer', () => {
       const synth = new SoundSynthesizer();
       synth.playTileSlide();
 
-      // 2 oscillators: transient sine + resonant triangle body
-      expect(createdOscillators.length).toBe(2);
+      // 3 oscillators: transient sine + transient triangle + resonant triangle body
+      expect(createdOscillators.length).toBe(3);
       expect(mockContext.createBiquadFilter).toHaveBeenCalled();
 
-      const [attackOsc, bodyOsc] = createdOscillators;
-      expect(attackOsc.type).toBe('sine');
+      const [attackSine, attackTri, bodyOsc] = createdOscillators;
+      expect(attackSine.type).toBe('sine');
+      expect(attackTri.type).toBe('triangle');
       expect(bodyOsc.type).toBe('triangle');
 
       // Attack transient pitch glide: ~650Hz gliding to ~280Hz
-      const attackStartCall = attackOsc.frequency.setValueAtTime.mock.calls[0];
-      const attackRampCall = attackOsc.frequency.exponentialRampToValueAtTime.mock.calls[0];
-      expect(attackStartCall[0]).toBeGreaterThanOrEqual(650 * 0.96 - 1);
-      expect(attackStartCall[0]).toBeLessThanOrEqual(650 * 1.04 + 1);
-      expect(attackRampCall[0]).toBeGreaterThanOrEqual(280 * 0.96 - 1);
-      expect(attackRampCall[0]).toBeLessThanOrEqual(280 * 1.04 + 1);
+      const attackSineStartCall = attackSine.frequency.setValueAtTime.mock.calls[0];
+      const attackSineRampCall = attackSine.frequency.exponentialRampToValueAtTime.mock.calls[0];
+      expect(attackSineStartCall[0]).toBeGreaterThanOrEqual(650 * 0.96 - 1);
+      expect(attackSineStartCall[0]).toBeLessThanOrEqual(650 * 1.04 + 1);
+      expect(attackSineRampCall[0]).toBeGreaterThanOrEqual(280 * 0.96 - 1);
+      expect(attackSineRampCall[0]).toBeLessThanOrEqual(280 * 1.04 + 1);
+
+      const attackTriStartCall = attackTri.frequency.setValueAtTime.mock.calls[0];
+      const attackTriRampCall = attackTri.frequency.exponentialRampToValueAtTime.mock.calls[0];
+      expect(attackTriStartCall[0]).toBeGreaterThanOrEqual(650 * 0.96 - 1);
+      expect(attackTriStartCall[0]).toBeLessThanOrEqual(650 * 1.04 + 1);
+      expect(attackTriRampCall[0]).toBeGreaterThanOrEqual(280 * 0.96 - 1);
+      expect(attackTriRampCall[0]).toBeLessThanOrEqual(280 * 1.04 + 1);
 
       // Body resonance: within warm 220Hz - 320Hz range
       const bodyFreqCall = bodyOsc.frequency.setValueAtTime.mock.calls[0];

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameController } from '../../src/ui/game-controller';
 import { getBlankIndex, isSolved } from '../../src/core/board';
 import { STORAGE_KEY } from '../../src/storage';
@@ -350,6 +350,40 @@ describe('GameController', () => {
       resolveHint(1);
       await p1;
       c.destroy();
+    });
+  });
+
+  describe('Audio cues integration', () => {
+    it('plays button click on sound unmute and undo sound on move undo', () => {
+      const soundSynth = controller.getSoundSynthesizer();
+      const clickSpy = vi.spyOn(soundSynth, 'playButtonClick');
+      const undoSpy = vi.spyOn(soundSynth, 'playUndo');
+      const slideSpy = vi.spyOn(soundSynth, 'playTileSlide');
+
+      // 1. Initial state sound is enabled; toggling mutes it
+      const muted = controller.toggleSound();
+      expect(muted).toBe(false);
+      expect(clickSpy).not.toHaveBeenCalled();
+
+      // 2. Toggling again re-enables sound and plays wooden button click
+      const unmuted = controller.toggleSound();
+      expect(unmuted).toBe(true);
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+
+      // 3. Make move plays tile slide
+      const board = controller.getBoard();
+      const blank = getBlankIndex(board);
+      const targetIndex = blank === 0 ? 1 : 0;
+      controller.makeMove(targetIndex);
+      expect(slideSpy).toHaveBeenCalled();
+
+      // 4. Undoing move plays undo sound
+      controller.undo();
+      expect(undoSpy).toHaveBeenCalled();
+
+      clickSpy.mockRestore();
+      undoSpy.mockRestore();
+      slideSpy.mockRestore();
     });
   });
 });

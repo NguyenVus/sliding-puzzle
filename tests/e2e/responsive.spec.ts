@@ -112,6 +112,52 @@ test.describe('Responsive Layout & Interaction Audit', () => {
         const victoryPath = `screenshots/${dev.id}_victory.png`;
         await page.screenshot({ path: victoryPath });
       }
+
+      // Check 9: Free Play mode HUD button dimensions and no-overflow audit
+      await page.goto('/');
+      await page.click('#btn-mode-toggle');
+      await page.waitForSelector('#size-selector-group');
+
+      const freePlayAudit = await page.evaluate(() => {
+        const checkEqual = (selector: string) => {
+          const els = Array.from(document.querySelectorAll<HTMLElement>(selector));
+          if (els.length <= 1) return { equalWidth: true, equalHeight: true };
+          const rects = els.map((e) => e.getBoundingClientRect());
+          const widths = rects.map((r) => r.width);
+          const heights = rects.map((r) => r.height);
+          const maxW = Math.max(...widths), minW = Math.min(...widths);
+          const maxH = Math.max(...heights), minH = Math.min(...heights);
+          return {
+            equalWidth: maxW - minW < 1.0, // allow 1px subpixel variation across fractional grid columns
+            equalHeight: maxH - minH < 0.5,
+          };
+        };
+
+        const overflowed: string[] = [];
+        const buttons = Array.from(document.querySelectorAll<HTMLElement>('.btn'));
+        for (const btn of buttons) {
+          if (btn.scrollWidth > btn.clientWidth + 1) {
+            overflowed.push(btn.textContent?.trim() || 'btn');
+          }
+        }
+
+        return {
+          actions: checkEqual('.action-btn'),
+          sizes: checkEqual('.size-btn'),
+          navs: checkEqual('.nav-btn'),
+          overflowed,
+        };
+      });
+
+      expect(freePlayAudit.overflowed, `Text overflow in Free Play on ${dev.name}`).toHaveLength(0);
+      expect(freePlayAudit.actions.equalHeight, `Action buttons height mismatch on ${dev.name}`).toBe(true);
+      if (!dev.isLandscape || dev.type === 'desktop') {
+        expect(freePlayAudit.actions.equalWidth, `Action buttons width mismatch on ${dev.name}`).toBe(true);
+      }
+      expect(freePlayAudit.sizes.equalHeight, `Size buttons height mismatch on ${dev.name}`).toBe(true);
+      expect(freePlayAudit.sizes.equalWidth, `Size buttons width mismatch on ${dev.name}`).toBe(true);
+      expect(freePlayAudit.navs.equalHeight, `Nav buttons height mismatch on ${dev.name}`).toBe(true);
+      expect(freePlayAudit.navs.equalWidth, `Nav buttons width mismatch on ${dev.name}`).toBe(true);
     });
   }
 });

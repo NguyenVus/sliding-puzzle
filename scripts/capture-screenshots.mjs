@@ -255,6 +255,13 @@ async function run() {
     capturedCount++;
     console.log(`📸 Saved screenshot: ${path.basename(free8SEPath)}`);
 
+    // Capture HUD close-up on iPhone SE (Freeplay)
+    const hudSE = extraPage.locator('.hud-bottom');
+    const hudSEPath = path.join(screenshotsDir, 'hud_bottom_iphone_se_freeplay.png');
+    await hudSE.screenshot({ path: hudSEPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(hudSEPath)}`);
+
     // 4. Free Play 8x8 iPhone 15
     await extraPage.setViewportSize({ width: 393, height: 852 });
     await extraPage.waitForTimeout(200);
@@ -262,6 +269,17 @@ async function run() {
     await extraPage.screenshot({ path: free815Path });
     capturedCount++;
     console.log(`📸 Saved screenshot: ${path.basename(free815Path)}`);
+
+    // Capture HUD close-up on iPhone 15 (Campaign)
+    await extraPage.click('#btn-mode-toggle');
+    await extraPage.waitForTimeout(200);
+    const hud15 = extraPage.locator('.hud-bottom');
+    const hud15Path = path.join(screenshotsDir, 'hud_bottom_iphone_15_campaign.png');
+    await hud15.screenshot({ path: hud15Path });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(hud15Path)}`);
+    await extraPage.click('#btn-mode-toggle'); // Switch back to Freeplay for victory
+    await extraPage.waitForTimeout(200);
 
     // 5. Free Play 8x8 victory
     await extraPage.evaluate(() => {

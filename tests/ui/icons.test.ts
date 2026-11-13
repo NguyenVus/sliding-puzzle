@@ -23,9 +23,24 @@ describe('Vector SVG Icon System (icons.ts)', () => {
     'check',
     'trophy',
     'wand',
+    'pause',
+    'play',
+    'lock',
+    'star',
+    'folder',
+    'palette',
+    'trash',
+    'sparkles',
+    'paw',
+    'mountain',
+    'rocket',
+    'grid',
+    'target',
+    'hand',
+    'keyboard',
   ];
 
-  it('renders valid SVG strings for all 20 required studio icons', () => {
+  it('renders valid SVG strings for all 35 studio icons', () => {
     for (const name of REQUIRED_ICONS) {
       const svg = renderIcon(name);
       expect(svg).toContain('<svg');

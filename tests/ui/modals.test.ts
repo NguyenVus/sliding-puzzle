@@ -54,7 +54,7 @@ describe('UI Modals Suite', () => {
       expect(onClose).toHaveBeenCalled();
     });
 
-    it('ensures campaign menu item icon inherits currentColor and does not have white override', () => {
+    it('ensures all menu item icons inherit currentColor and do not have white override', () => {
       const menu = new MenuModalView(container, {
         onSelectCampaign: vi.fn(),
         onSelectFreePlay: vi.fn(),
@@ -64,14 +64,33 @@ describe('UI Modals Suite', () => {
       });
       menu.show();
 
-      const campaignBtn = container.querySelector<HTMLButtonElement>('#menu-btn-campaign');
-      expect(campaignBtn).not.toBeNull();
-      expect(campaignBtn?.classList.contains('btn-primary-gradient')).toBe(false);
+      const items = [
+        { id: '#menu-btn-campaign', iconClass: 'icon-trophy' },
+        { id: '#menu-btn-freeplay', iconClass: 'icon-freeplay' },
+        { id: '#menu-btn-picture', iconClass: 'icon-picture' },
+        { id: '#menu-btn-settings', iconClass: 'icon-settings' },
+        { id: '#menu-btn-howtoplay', iconClass: 'icon-guide' },
+      ];
 
-      const trophyIcon = campaignBtn?.querySelector('.menu-item-icon .game-icon');
-      expect(trophyIcon).not.toBeNull();
-      expect(trophyIcon?.getAttribute('stroke')).toBe('currentColor');
-      expect(trophyIcon?.classList.contains('icon-trophy')).toBe(true);
+      for (const item of items) {
+        const btn = container.querySelector<HTMLButtonElement>(item.id);
+        expect(btn).not.toBeNull();
+        expect(btn?.classList.contains('btn-primary-gradient')).toBe(false);
+
+        const icon = btn?.querySelector('.menu-item-icon .game-icon');
+        expect(icon).not.toBeNull();
+        expect(icon?.getAttribute('stroke')).toBe('currentColor');
+        expect(icon?.classList.contains(item.iconClass)).toBe(true);
+
+        const arrow = btn?.querySelector('.menu-item-arrow .game-icon');
+        expect(arrow).not.toBeNull();
+        expect(arrow?.getAttribute('stroke')).toBe('currentColor');
+        expect(arrow?.classList.contains('icon-chevron-right')).toBe(true);
+      }
+
+      const brandIcon = container.querySelector('.menu-brand-icon .game-icon');
+      expect(brandIcon).not.toBeNull();
+      expect(brandIcon?.getAttribute('stroke')).toBe('currentColor');
 
       menu.close();
     });

@@ -647,6 +647,7 @@ body {
 
 .icon-gold {
   color: #f59e0b;
+  fill: #f59e0b;
 }
 
 .btn-icon {
@@ -761,6 +762,7 @@ body {
   display: inline-block;
   margin-bottom: 8px;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  color: #f59e0b;
 }
 
 .new-record-badge {
@@ -1611,6 +1613,10 @@ body[data-theme="wood-dark"] .menu-item-desc {
   color: #bda58c;
 }
 
+body[data-theme="wood-dark"] .menu-item-arrow {
+  color: #c4a179;
+}
+
 body[data-theme="wood-dark"] .setting-item-row,
 body[data-theme="wood-dark"] .setting-item-col {
   border-bottom-color: #3d281b;
@@ -1901,6 +1907,10 @@ body[data-theme="marble-gold"] .menu-item-btn:hover {
 
 body[data-theme="marble-gold"] .menu-item-desc {
   color: #8c733e;
+}
+
+body[data-theme="marble-gold"] .menu-item-arrow {
+  color: #b8860b;
 }
 
 body[data-theme="marble-gold"] .setting-item-row,
@@ -2254,6 +2264,10 @@ body[data-theme="tatami-sakura"] .menu-item-btn:hover {
 }
 
 body[data-theme="tatami-sakura"] .menu-item-desc {
+  color: #8c5963;
+}
+
+body[data-theme="tatami-sakura"] .menu-item-arrow {
   color: #8c5963;
 }
 
@@ -2626,6 +2640,10 @@ body[data-theme="neon-cyberpunk"] .menu-item-desc {
   color: #94a3b8;
 }
 
+body[data-theme="neon-cyberpunk"] .menu-item-arrow {
+  color: #00f0ff;
+}
+
 body[data-theme="neon-cyberpunk"] .setting-item-row,
 body[data-theme="neon-cyberpunk"] .setting-item-col {
   border-bottom-color: rgba(0, 240, 255, 0.15);
@@ -2829,6 +2847,11 @@ body[data-theme="neon-cyberpunk"] .victory-card {
     0 0 35px rgba(0, 240, 255, 0.35),
     0 0 70px rgba(255, 0, 127, 0.2),
     inset 0 1px 1px rgba(0, 240, 255, 0.3);
+}
+
+body[data-theme="neon-cyberpunk"] .victory-badge {
+  color: #00f0ff;
+  filter: drop-shadow(0 0 16px rgba(0, 240, 255, 0.8));
 }
 
 body[data-theme="neon-cyberpunk"] .victory-title {

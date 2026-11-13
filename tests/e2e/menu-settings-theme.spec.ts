@@ -174,4 +174,73 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
     // Tiles should return to classic
     await expect(page.locator('.wood-tile').first()).not.toHaveClass(/is-picture-tile/);
   });
+
+  test('verifies all main menu icons and chevron arrows maintain high contrast across all 5 themes', async ({
+    page,
+  }) => {
+    const themeExpectations: Array<{
+      themeBtnId: string;
+      themeAttr: string;
+      expectedItemColor: string;
+      expectedArrowColor: string;
+    }> = [
+      {
+        themeBtnId: '#theme-btn-light',
+        themeAttr: 'wood-light',
+        expectedItemColor: 'rgb(61, 21, 4)', // #3d1504
+        expectedArrowColor: 'rgb(179, 139, 82)', // #b38b52
+      },
+      {
+        themeBtnId: '#theme-btn-dark',
+        themeAttr: 'wood-dark',
+        expectedItemColor: 'rgb(245, 228, 204)', // #f5e4cc
+        expectedArrowColor: 'rgb(196, 161, 121)', // #c4a179
+      },
+      {
+        themeBtnId: '#theme-btn-marble',
+        themeAttr: 'marble-gold',
+        expectedItemColor: 'rgb(74, 56, 9)', // #4a3809
+        expectedArrowColor: 'rgb(184, 134, 11)', // #b8860b
+      },
+      {
+        themeBtnId: '#theme-btn-tatami',
+        themeAttr: 'tatami-sakura',
+        expectedItemColor: 'rgb(64, 16, 25)', // #401019
+        expectedArrowColor: 'rgb(140, 89, 99)', // #8c5963
+      },
+      {
+        themeBtnId: '#theme-btn-neon',
+        themeAttr: 'neon-cyberpunk',
+        expectedItemColor: 'rgb(226, 232, 240)', // #e2e8f0
+        expectedArrowColor: 'rgb(0, 240, 255)', // #00f0ff
+      },
+    ];
+
+    for (const item of themeExpectations) {
+      // 1. Open Settings and switch theme
+      await page.locator('#btn-settings').click();
+      await page.locator(item.themeBtnId).click();
+      await expect(page.locator('body')).toHaveAttribute('data-theme', item.themeAttr);
+      await page.locator('#settings-btn-done').click();
+
+      // 2. Open Main Menu
+      await page.locator('#btn-menu').click();
+      await expect(page.locator('.main-menu-card')).toBeVisible();
+
+      // 3. Check trophy icon in Campaign item
+      const trophyIcon = page.locator('#menu-btn-campaign .menu-item-icon .game-icon');
+      const trophyColor = await trophyIcon.evaluate((el) => window.getComputedStyle(el).color);
+      expect(trophyColor).toBe(item.expectedItemColor);
+      expect(trophyColor).not.toBe('rgb(255, 255, 255)');
+
+      // 4. Check chevron arrow in Campaign item
+      const chevronIcon = page.locator('#menu-btn-campaign .menu-item-arrow');
+      const chevronColor = await chevronIcon.evaluate((el) => window.getComputedStyle(el).color);
+      expect(chevronColor).toBe(item.expectedArrowColor);
+
+      // 5. Close Main Menu
+      await page.locator('#menu-btn-close-x').click();
+      await expect(page.locator('.main-menu-card')).not.toBeVisible();
+    }
+  });
 });

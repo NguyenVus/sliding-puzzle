@@ -6,6 +6,8 @@ export interface HudViewOptions {
   mode?: GameMode;
   currentSize?: number;
   currentLevel?: LevelConfig;
+  soundEnabled?: boolean;
+  isPictureMode?: boolean;
   onUndo?: () => void;
   onRestart?: () => void;
   onScramble?: () => void;
@@ -14,6 +16,10 @@ export interface HudViewOptions {
   onSizeChange?: (size: number) => void;
   onOpenLevelSelect?: () => void;
   onSwitchMode?: (mode: GameMode) => void;
+  onOpenMenu?: () => void;
+  onToggleSound?: () => void;
+  onOpenSettings?: () => void;
+  onPreviewPicture?: () => void;
 }
 
 export class HudView {
@@ -25,6 +31,12 @@ export class HudView {
   private timerEl!: HTMLElement;
   private titleEl!: HTMLElement;
   private subtitleEl!: HTMLElement;
+
+  private menuBtn!: HTMLButtonElement;
+  private soundBtn!: HTMLButtonElement;
+  private soundIconEl!: HTMLElement;
+  private settingsBtn!: HTMLButtonElement;
+  private previewPicBtn!: HTMLButtonElement;
 
   private undoBtn!: HTMLButtonElement;
   private restartBtn!: HTMLButtonElement;
@@ -57,7 +69,30 @@ export class HudView {
   }
 
   private renderTopHud(): void {
+    const isMuted = this.options.soundEnabled === false;
+    const isPic = this.options.isPictureMode === true;
+
     this.topContainer.innerHTML = `
+      <div class="hud-top-bar">
+        <button type="button" id="btn-menu" class="btn hud-icon-btn nav-menu-btn" aria-label="Mở Menu trò chơi">
+          <span class="btn-icon">☰</span>
+          <span class="btn-text">Menu</span>
+        </button>
+
+        <div class="hud-top-actions">
+          <button type="button" id="btn-preview-picture" class="btn hud-icon-btn btn-preview-pic" aria-label="Xem ảnh gốc hoàn chỉnh" style="${isPic ? 'display: inline-flex;' : 'display: none;'}">
+            <span class="btn-icon">👁️</span>
+            <span class="btn-text">Ảnh gốc</span>
+          </button>
+          <button type="button" id="btn-sound-toggle" class="btn hud-icon-btn btn-square" aria-label="Bật/Tắt âm thanh">
+            <span class="btn-icon" id="btn-sound-icon">${isMuted ? '🔇' : '🔊'}</span>
+          </button>
+          <button type="button" id="btn-settings" class="btn hud-icon-btn btn-square" aria-label="Cài đặt">
+            <span class="btn-icon">⚙️</span>
+          </button>
+        </div>
+      </div>
+
       <div class="hud-stats-group" role="region" aria-label="Thông số trò chơi">
         <div class="stat-card" id="stat-moves">
           <span class="stat-label">BƯỚC</span>
@@ -78,6 +113,17 @@ export class HudView {
     this.timerEl = this.topContainer.querySelector('#hud-timer-val')!;
     this.titleEl = this.topContainer.querySelector('#hud-title')!;
     this.subtitleEl = this.topContainer.querySelector('#hud-subtitle')!;
+
+    this.menuBtn = this.topContainer.querySelector('#btn-menu')!;
+    this.soundBtn = this.topContainer.querySelector('#btn-sound-toggle')!;
+    this.soundIconEl = this.topContainer.querySelector('#btn-sound-icon')!;
+    this.settingsBtn = this.topContainer.querySelector('#btn-settings')!;
+    this.previewPicBtn = this.topContainer.querySelector('#btn-preview-picture')!;
+
+    this.menuBtn.addEventListener('click', () => this.options.onOpenMenu?.());
+    this.soundBtn.addEventListener('click', () => this.options.onToggleSound?.());
+    this.settingsBtn.addEventListener('click', () => this.options.onOpenSettings?.());
+    this.previewPicBtn.addEventListener('click', () => this.options.onPreviewPicture?.());
   }
 
   private renderControls(): void {
@@ -272,6 +318,18 @@ export class HudView {
     if (this.currentMode === 'freeplay') {
       if (this.titleEl) this.titleEl.textContent = `Tự Do ${size}×${size}`;
       if (this.subtitleEl) this.subtitleEl.textContent = `Bàn cờ ${size}×${size} ngẫu nhiên`;
+    }
+  }
+
+  public setSoundEnabled(enabled: boolean): void {
+    if (this.soundIconEl) {
+      this.soundIconEl.textContent = enabled ? '🔊' : '🔇';
+    }
+  }
+
+  public setPictureModeActive(active: boolean): void {
+    if (this.previewPicBtn) {
+      this.previewPicBtn.style.display = active ? 'inline-flex' : 'none';
     }
   }
 }

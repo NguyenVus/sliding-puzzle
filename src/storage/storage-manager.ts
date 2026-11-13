@@ -3,11 +3,20 @@ import type {
   GameStorageData,
   LevelRecord,
   LevelVictoryResult,
+  UserSettings,
 } from './types';
 import type { StarRating } from '../levels/types';
 
 export const STORAGE_KEY = 'sliding_puzzle_progress_v1';
 export const TOTAL_LEVELS = 30;
+
+export const DEFAULT_SETTINGS: UserSettings = {
+  soundEnabled: true,
+  theme: 'wood-light',
+  animationEnabled: true,
+  pictureNumbersEnabled: true,
+  selectedPictureId: 'preset-fuji',
+};
 
 export class StorageManager {
   private inMemoryFallback: Map<string, string> = new Map();
@@ -83,6 +92,7 @@ export class StorageManager {
       unlockedMaxLevel: 1,
       levels,
       freePlayBest: {},
+      settings: { ...DEFAULT_SETTINGS },
     };
   }
 
@@ -108,11 +118,17 @@ export class StorageManager {
         ? Math.min(TOTAL_LEVELS, Math.max(1, Math.floor(rawMax)))
         : 1;
 
+      const mergedSettings: UserSettings = {
+        ...DEFAULT_SETTINGS,
+        ...(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {}),
+      };
+
       const merged: GameStorageData = {
         version: typeof parsed.version === 'number' ? parsed.version : defaults.version,
         unlockedMaxLevel,
         levels: { ...defaults.levels, ...(parsed.levels && typeof parsed.levels === 'object' ? parsed.levels : {}) },
         freePlayBest: { ...(parsed.freePlayBest && typeof parsed.freePlayBest === 'object' ? parsed.freePlayBest : {}) },
+        settings: mergedSettings,
       };
 
       // Always guarantee Level 1 is unlocked
@@ -296,6 +312,23 @@ export class StorageManager {
   public getFreePlayRecord(size: number): FreePlayRecord | null {
     const data = this.load();
     return data.freePlayBest[size] ?? null;
+  }
+
+  public getSettings(): UserSettings {
+    const data = this.load();
+    return { ...DEFAULT_SETTINGS, ...data.settings };
+  }
+
+  public updateSettings(partial: Partial<UserSettings>): UserSettings {
+    const data = this.load();
+    const updated: UserSettings = {
+      ...DEFAULT_SETTINGS,
+      ...data.settings,
+      ...partial,
+    };
+    data.settings = updated;
+    this.save(data);
+    return updated;
   }
 
   public resetAll(): void {

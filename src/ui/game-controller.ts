@@ -18,7 +18,14 @@ import { KeyboardHandler } from './input/keyboard-handler';
 import { getLevel, createLevelBoard } from '../levels/level-manager';
 import { evaluateStars } from '../levels/star-evaluator';
 import { StorageManager, defaultStorage } from '../storage/storage-manager';
+import type { WoodTheme } from '../storage/types';
 import { SolverClient, defaultSolverClient } from '../solver';
+import { SoundSynthesizer } from '../audio';
+import { PictureManager } from '../picture';
+import { MenuModalView } from './components/menu-modal-view';
+import { SettingsModalView } from './components/settings-modal-view';
+import { HowToPlayModalView } from './components/how-to-play-modal-view';
+import { PictureModalView } from './components/picture-modal-view';
 
 export type GameStatus = 'ready' | 'playing' | 'won';
 
@@ -32,6 +39,8 @@ export interface GameControllerElements {
 export interface GameControllerOptions {
   storageManager?: StorageManager;
   solverClient?: SolverClient;
+  soundSynthesizer?: SoundSynthesizer;
+  pictureManager?: PictureManager;
   initialMode?: GameMode;
   initialLevel?: number;
   initialSize?: number;
@@ -41,11 +50,17 @@ export class GameController {
   private readonly elements: GameControllerElements;
   private readonly storageManager: StorageManager;
   private readonly solverClient: SolverClient;
+  private readonly soundSynthesizer: SoundSynthesizer;
+  private readonly pictureManager: PictureManager;
   private layoutManager!: LayoutManager;
   private boardView!: BoardView;
   private hudView!: HudView;
   private modalView!: ModalView;
   private levelSelectView!: LevelSelectView;
+  private menuModalView!: MenuModalView;
+  private settingsModalView!: SettingsModalView;
+  private howToPlayModalView!: HowToPlayModalView;
+  private pictureModalView!: PictureModalView;
   private pointerHandler!: PointerHandler;
   private keyboardHandler!: KeyboardHandler;
 
@@ -75,6 +90,10 @@ export class GameController {
     this.elements = elements;
     this.storageManager = options.storageManager ?? defaultStorage;
     this.solverClient = options.solverClient ?? defaultSolverClient;
+    this.soundSynthesizer =
+      options.soundSynthesizer ?? new SoundSynthesizer({ storageManager: this.storageManager });
+    this.pictureManager =
+      options.pictureManager ?? new PictureManager(this.storageManager);
     this.mode = options.initialMode ?? 'campaign';
     const savedData = this.storageManager.load();
     this.currentLevelId =
@@ -87,6 +106,12 @@ export class GameController {
   }
 
   private init(): void {
+    const userSettings = this.storageManager.getSettings();
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-theme', userSettings.theme);
+      document.body.setAttribute('data-animations', String(userSettings.animationEnabled));
+    }
+
     // 1. Initialize Views & Managers
     this.layoutManager = new LayoutManager(
       this.elements.boardContainer,
@@ -100,6 +125,8 @@ export class GameController {
     );
 
     this.boardView = new BoardView(this.elements.boardContainer, {
+      pictureManager: this.pictureManager,
+      animationEnabled: userSettings.animationEnabled,
       onTileClick: (index) => {
         if (this.isAutoSolving) {
           this.stopAutoSolve();
@@ -114,6 +141,8 @@ export class GameController {
       {
         mode: this.mode,
         currentSize: this.size,
+        soundEnabled: this.soundSynthesizer.isSoundEnabled(),
+        isPictureMode: this.pictureManager.isEnabled(),
         onUndo: () => this.undo(),
         onRestart: () => this.restartGame(),
         onScramble: () => this.startNewGame(),
@@ -126,6 +155,10 @@ export class GameController {
         onSizeChange: (size) => this.changeSize(size),
         onOpenLevelSelect: () => this.openLevelSelect(),
         onSwitchMode: (nextMode) => this.setMode(nextMode),
+        onOpenMenu: () => this.openMainMenu(),
+        onToggleSound: () => this.toggleSound(),
+        onOpenSettings: () => this.openSettings(),
+        onPreviewPicture: () => this.openPicturePreview(),
       }
     );
 
@@ -145,6 +178,71 @@ export class GameController {
         if (this.status === 'playing') {
           this.startTimer();
         }
+      },
+    });
+
+    this.menuModalView = new MenuModalView(this.elements.root, {
+      onSelectCampaign: () => this.openLevelSelect(),
+      onSelectFreePlay: () => this.startFreePlay(this.size),
+      onSelectPictureMode: () => this.openPictureSelector(),
+      onOpenSettings: () => this.openSettings(),
+      onOpenHowToPlay: () => this.openHowToPlay(),
+      onClose: () => {
+        if (this.status === 'playing') this.startTimer();
+      },
+    });
+
+    this.settingsModalView = new SettingsModalView(this.elements.root, {
+      storageManager: this.storageManager,
+      onSoundChange: (enabled) => {
+        this.soundSynthesizer.setSoundEnabled(enabled);
+        this.hudView.setSoundEnabled(enabled);
+        if (enabled) {
+          this.soundSynthesizer.playTileSlide();
+        }
+      },
+      onThemeChange: (theme) => {
+        this.setTheme(theme);
+      },
+      onAnimationChange: (enabled) => {
+        this.setAnimationEnabled(enabled);
+      },
+      onPictureNumbersChange: (enabled) => {
+        this.pictureManager.setNumbersVisible(enabled);
+        this.boardView.render(this.board, { animate: false });
+      },
+      onResetProgress: () => {
+        this.storageManager.resetAll();
+        this.loadLevel(1);
+      },
+      onClose: () => {
+        if (this.status === 'playing') this.startTimer();
+      },
+    });
+
+    this.howToPlayModalView = new HowToPlayModalView(this.elements.root, {
+      onClose: () => {
+        if (this.status === 'playing') this.startTimer();
+      },
+    });
+
+    this.pictureModalView = new PictureModalView(this.elements.root, {
+      pictureManager: this.pictureManager,
+      gridSize: this.size,
+      onSelectPreset: (presetId) => {
+        this.pictureManager.selectPreset(presetId);
+        this.pictureManager.setEnabled(true);
+        this.hudView.setPictureModeActive(true);
+        this.boardView.render(this.board, { animate: false });
+      },
+      onUploadCustom: (dataUrl) => {
+        this.pictureManager.setCustomImage(dataUrl);
+        this.pictureManager.setEnabled(true);
+        this.hudView.setPictureModeActive(true);
+        this.boardView.render(this.board, { animate: false });
+      },
+      onClose: () => {
+        if (this.status === 'playing') this.startTimer();
       },
     });
 
@@ -185,6 +283,14 @@ export class GameController {
           this.modalView.close();
         } else if (this.levelSelectView.isOpen()) {
           this.levelSelectView.close();
+        } else if (this.menuModalView.isOpen()) {
+          this.menuModalView.close();
+        } else if (this.settingsModalView.isOpen()) {
+          this.settingsModalView.close();
+        } else if (this.howToPlayModalView.isOpen()) {
+          this.howToPlayModalView.close();
+        } else if (this.pictureModalView.isOpen()) {
+          this.pictureModalView.close();
         }
       },
     });
@@ -354,8 +460,85 @@ export class GameController {
   public isModalOpen(): boolean {
     return Boolean(
       (this.levelSelectView && this.levelSelectView.isOpen()) ||
-      (this.modalView && this.modalView.isOpen())
+      (this.modalView && this.modalView.isOpen()) ||
+      (this.menuModalView && this.menuModalView.isOpen()) ||
+      (this.settingsModalView && this.settingsModalView.isOpen()) ||
+      (this.howToPlayModalView && this.howToPlayModalView.isOpen()) ||
+      (this.pictureModalView && this.pictureModalView.isOpen())
     );
+  }
+
+  public openMainMenu(): void {
+    if (this.status === 'playing') {
+      this.stopTimer();
+    }
+    this.menuModalView.show();
+  }
+
+  public openSettings(): void {
+    if (this.status === 'playing') {
+      this.stopTimer();
+    }
+    this.settingsModalView.show();
+  }
+
+  public openHowToPlay(): void {
+    if (this.status === 'playing') {
+      this.stopTimer();
+    }
+    this.howToPlayModalView.show();
+  }
+
+  public openPictureSelector(): void {
+    if (this.status === 'playing') {
+      this.stopTimer();
+    }
+    this.pictureModalView.showSelector(this.size);
+  }
+
+  public openPicturePreview(): void {
+    if (this.status === 'playing') {
+      this.stopTimer();
+    }
+    this.pictureModalView.showPreview(this.size);
+  }
+
+  public toggleSound(): boolean {
+    const nextState = this.soundSynthesizer.toggleMute();
+    this.hudView.setSoundEnabled(nextState);
+    if (nextState) {
+      this.soundSynthesizer.playTileSlide();
+    }
+    return nextState;
+  }
+
+  public setTheme(theme: WoodTheme): void {
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-theme', theme);
+    }
+    this.storageManager.updateSettings({ theme });
+  }
+
+  public setAnimationEnabled(enabled: boolean): void {
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-animations', String(enabled));
+    }
+    this.boardView.setAnimationEnabled(enabled);
+    this.storageManager.updateSettings({ animationEnabled: enabled });
+  }
+
+  public setPictureMode(enabled: boolean): void {
+    this.pictureManager.setEnabled(enabled);
+    this.hudView.setPictureModeActive(enabled);
+    this.boardView.render(this.board, { animate: false });
+  }
+
+  public getSoundSynthesizer(): SoundSynthesizer {
+    return this.soundSynthesizer;
+  }
+
+  public getPictureManager(): PictureManager {
+    return this.pictureManager;
   }
 
   public openLevelSelect(): void {
@@ -411,6 +594,9 @@ export class GameController {
     this.boardView.render(this.board, { animate: true });
     this.hudView.setMoves(this.moves);
     this.hudView.setCanUndo(true);
+
+    // Play tactile mechanical wood click sound
+    this.soundSynthesizer.playTileSlide();
 
     // Check win condition
     if (isSolved(this.board)) {
@@ -537,6 +723,9 @@ export class GameController {
     this.stopTimer();
     this.stopAutoSolve();
     this.boardView.clearHint();
+
+    // Play triumphant victory chime
+    this.soundSynthesizer.playVictory();
 
     const mins = Math.floor(this.elapsedSeconds / 60);
     const secs = this.elapsedSeconds % 60;
@@ -811,11 +1000,16 @@ export class GameController {
   public destroy(): void {
     this.stopAutoSolve();
     this.solverClient.destroy();
+    this.soundSynthesizer.destroy();
     this.stopTimer();
     this.layoutManager.destroy();
     this.pointerHandler.destroy();
     this.keyboardHandler.destroy();
     this.modalView.close();
     this.levelSelectView.close();
+    this.menuModalView.close();
+    this.settingsModalView.close();
+    this.howToPlayModalView.close();
+    this.pictureModalView.close();
   }
 }

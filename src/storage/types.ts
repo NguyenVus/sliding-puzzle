@@ -1,5 +1,15 @@
 import type { StarRating } from '../levels/types';
 
+export type WoodTheme = 'wood-light' | 'wood-dark';
+
+export interface UserSettings {
+  soundEnabled: boolean;
+  theme: WoodTheme;
+  animationEnabled: boolean;
+  pictureNumbersEnabled: boolean;
+  selectedPictureId: string;
+}
+
 export interface LevelRecord {
   levelId: number;
   stars: StarRating;
@@ -19,6 +29,7 @@ export interface GameStorageData {
   unlockedMaxLevel: number;
   levels: Record<number, LevelRecord>;
   freePlayBest: Record<number, FreePlayRecord>;
+  settings: UserSettings;
 }
 
 export interface LevelVictoryResult {

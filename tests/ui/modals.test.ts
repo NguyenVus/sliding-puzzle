@@ -1,0 +1,161 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MenuModalView } from '../../src/ui/components/menu-modal-view';
+import { SettingsModalView } from '../../src/ui/components/settings-modal-view';
+import { HowToPlayModalView } from '../../src/ui/components/how-to-play-modal-view';
+import { PictureModalView } from '../../src/ui/components/picture-modal-view';
+import { StorageManager } from '../../src/storage/storage-manager';
+import { PictureManager } from '../../src/picture/picture-manager';
+
+describe('UI Modals Suite', () => {
+  let container: HTMLElement;
+  let storage: StorageManager;
+  let pictureManager: PictureManager;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    storage = new StorageManager();
+    storage.resetAll();
+    pictureManager = new PictureManager(storage);
+  });
+
+  describe('MenuModalView', () => {
+    it('opens, triggers callbacks on navigation clicks, and closes', () => {
+      const onSelectCampaign = vi.fn();
+      const onSelectFreePlay = vi.fn();
+      const onSelectPicture = vi.fn();
+      const onOpenSettings = vi.fn();
+      const onOpenHowToPlay = vi.fn();
+      const onClose = vi.fn();
+
+      const menu = new MenuModalView(container, {
+        onSelectCampaign,
+        onSelectFreePlay,
+        onSelectPictureMode: onSelectPicture,
+        onOpenSettings,
+        onOpenHowToPlay,
+        onClose,
+      });
+
+      expect(menu.isOpen()).toBe(false);
+      menu.show();
+      expect(menu.isOpen()).toBe(true);
+
+      const campaignBtn = container.querySelector<HTMLButtonElement>('#menu-btn-campaign');
+      campaignBtn?.click();
+      expect(onSelectCampaign).toHaveBeenCalled();
+      expect(menu.isOpen()).toBe(false);
+
+      // Re-open and click close X
+      menu.show();
+      const closeX = container.querySelector<HTMLButtonElement>('#menu-btn-close-x');
+      closeX?.click();
+      expect(menu.isOpen()).toBe(false);
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('SettingsModalView', () => {
+    it('manages sound toggle, themes, animations, and picture numbers', () => {
+      const onSoundChange = vi.fn();
+      const onThemeChange = vi.fn();
+      const onAnimationChange = vi.fn();
+      const onPictureNumbersChange = vi.fn();
+      const onResetProgress = vi.fn();
+
+      const settingsModal = new SettingsModalView(container, {
+        storageManager: storage,
+        onSoundChange,
+        onThemeChange,
+        onAnimationChange,
+        onPictureNumbersChange,
+        onResetProgress,
+      });
+
+      settingsModal.show();
+      expect(settingsModal.isOpen()).toBe(true);
+
+      // Theme button click
+      const darkBtn = container.querySelector<HTMLButtonElement>('#theme-btn-dark');
+      darkBtn?.click();
+      expect(onThemeChange).toHaveBeenCalledWith('wood-dark');
+
+      const lightBtn = container.querySelector<HTMLButtonElement>('#theme-btn-light');
+      lightBtn?.click();
+      expect(onThemeChange).toHaveBeenCalledWith('wood-light');
+
+      // Sound toggle
+      const soundToggle = container.querySelector<HTMLInputElement>('#setting-toggle-sound');
+      if (soundToggle) {
+        soundToggle.checked = false;
+        soundToggle.dispatchEvent(new Event('change'));
+        expect(onSoundChange).toHaveBeenCalledWith(false);
+      }
+
+      // Animation toggle
+      const animToggle = container.querySelector<HTMLInputElement>('#setting-toggle-anim');
+      if (animToggle) {
+        animToggle.checked = false;
+        animToggle.dispatchEvent(new Event('change'));
+        expect(onAnimationChange).toHaveBeenCalledWith(false);
+      }
+
+      // Done button
+      const doneBtn = container.querySelector<HTMLButtonElement>('#settings-btn-done');
+      doneBtn?.click();
+      expect(settingsModal.isOpen()).toBe(false);
+    });
+  });
+
+  describe('HowToPlayModalView', () => {
+    it('renders game rules, star criteria, and keyboard shortcuts', () => {
+      const onClose = vi.fn();
+      const howToPlay = new HowToPlayModalView(container, { onClose });
+
+      howToPlay.show();
+      expect(howToPlay.isOpen()).toBe(true);
+      expect(container.textContent).toContain('Hướng Dẫn Luật Chơi');
+      expect(container.textContent).toContain('Quy Tắc Tính Sao');
+      expect(container.textContent).toContain('Phím Tắt Tiện Lợi');
+
+      const doneBtn = container.querySelector<HTMLButtonElement>('#howtoplay-btn-done');
+      doneBtn?.click();
+      expect(howToPlay.isOpen()).toBe(false);
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('PictureModalView', () => {
+    it('displays picture preview and handles preset selection', () => {
+      const onSelectPreset = vi.fn();
+      const onUploadCustom = vi.fn();
+      const onClose = vi.fn();
+
+      const pictureModal = new PictureModalView(container, {
+        pictureManager,
+        gridSize: 3,
+        onSelectPreset,
+        onUploadCustom,
+        onClose,
+      });
+
+      // 1. Selector mode
+      pictureModal.showSelector(3);
+      expect(pictureModal.isOpen()).toBe(true);
+      expect(container.textContent).toContain('Chế Độ Ghép Ảnh');
+
+      const pineBtn = container.querySelector<HTMLButtonElement>('[data-preset-id="preset-pine"]');
+      pineBtn?.click();
+      expect(onSelectPreset).toHaveBeenCalledWith('preset-pine');
+
+      pictureModal.close();
+      expect(pictureModal.isOpen()).toBe(false);
+
+      // 2. Preview mode
+      pictureModal.showPreview(3);
+      expect(pictureModal.isOpen()).toBe(true);
+      expect(container.textContent).toContain('Ảnh Gốc Hoàn Chỉnh');
+      pictureModal.close();
+    });
+  });
+});

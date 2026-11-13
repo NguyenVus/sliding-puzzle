@@ -1,9 +1,12 @@
 import type { Board } from '../../core/types';
 import { getMovableTiles, getBlankIndex } from '../../core/board';
 import type { LayoutMetrics } from '../layout-manager';
+import type { PictureManager } from '../../picture/picture-manager';
 
 export interface BoardViewOptions {
   onTileClick?: (index: number, tileValue: number) => void;
+  pictureManager?: PictureManager;
+  animationEnabled?: boolean;
 }
 
 export class BoardView {
@@ -13,6 +16,8 @@ export class BoardView {
   private readonly tilesContainer: HTMLElement;
   private tileElements: Map<number, HTMLButtonElement> = new Map();
   private currentBoard: Board | null = null;
+  private pictureManager?: PictureManager;
+  private animationEnabled = true;
   private currentMetrics: LayoutMetrics = {
     boardSize: 320,
     tileSize: 90,
@@ -28,6 +33,10 @@ export class BoardView {
   constructor(container: HTMLElement, options: BoardViewOptions = {}) {
     this.container = container;
     this.onTileClick = options.onTileClick;
+    this.pictureManager = options.pictureManager;
+    if (options.animationEnabled !== undefined) {
+      this.animationEnabled = options.animationEnabled;
+    }
 
     // Create board DOM structure
     this.boardFrame = document.createElement('div');
@@ -120,6 +129,8 @@ export class BoardView {
 
     const { tileSize, gap, padding } = this.currentMetrics;
 
+    const effectiveAnimate = this.animationEnabled && animate;
+
     // Position each tile based on current 1D index
     for (let index = 0; index < totalTiles; index++) {
       const val = board.tiles[index];
@@ -142,6 +153,31 @@ export class BoardView {
       tileEl.dataset.col = String(col);
       tileEl.setAttribute('aria-label', `Ô số ${val}, hàng ${row + 1}, cột ${col + 1}`);
 
+      // Handle picture mode background slices
+      if (this.pictureManager && this.pictureManager.isEnabled()) {
+        const bgSlice = this.pictureManager.getTileBackground(val, n, this.currentMetrics);
+        if (bgSlice) {
+          tileEl.classList.add('is-picture-tile');
+          tileEl.style.backgroundImage = bgSlice.backgroundImage;
+          tileEl.style.backgroundSize = bgSlice.backgroundSize;
+          tileEl.style.backgroundPosition = bgSlice.backgroundPosition;
+          tileEl.style.backgroundRepeat = 'no-repeat';
+        }
+
+        if (!this.pictureManager.isNumbersVisible()) {
+          tileEl.classList.add('hide-corner-number');
+        } else {
+          tileEl.classList.remove('hide-corner-number');
+        }
+      } else {
+        tileEl.classList.remove('is-picture-tile');
+        tileEl.classList.remove('hide-corner-number');
+        tileEl.style.backgroundImage = '';
+        tileEl.style.backgroundSize = '';
+        tileEl.style.backgroundPosition = '';
+        tileEl.style.backgroundRepeat = '';
+      }
+
       const isMovable = movableIndices.has(index);
       if (isMovable) {
         tileEl.classList.add('movable');
@@ -157,7 +193,7 @@ export class BoardView {
         tileEl.classList.remove('hint-glow');
       }
 
-      if (!animate) {
+      if (!effectiveAnimate) {
         tileEl.style.transition = 'none';
         tileEl.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         // Trigger reflow then restore transition
@@ -211,7 +247,27 @@ export class BoardView {
     numSpan.textContent = String(val);
     btn.appendChild(numSpan);
 
+    const cornerSpan = document.createElement('span');
+    cornerSpan.className = 'tile-corner-badge';
+    cornerSpan.textContent = String(val);
+    btn.appendChild(cornerSpan);
+
     return btn;
+  }
+
+  public setPictureManager(pm: PictureManager): void {
+    this.pictureManager = pm;
+    if (this.currentBoard) {
+      this.render(this.currentBoard, { animate: false });
+    }
+  }
+
+  public setAnimationEnabled(enabled: boolean): void {
+    this.animationEnabled = enabled;
+  }
+
+  public getPictureManager(): PictureManager | undefined {
+    return this.pictureManager;
   }
 
   public getBoardFrameElement(): HTMLElement {

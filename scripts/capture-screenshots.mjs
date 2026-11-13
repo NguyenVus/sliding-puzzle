@@ -275,6 +275,75 @@ async function run() {
     console.log(`🎉 Saved screenshot: ${path.basename(free8VicPath)}`);
 
     await extraPage.close();
+
+    // 6. Phase 5 New Features Screenshots (Menu, Settings, Themes, Picture Mode)
+    console.log('\n🎨 Capturing Phase 5 features (Menu, Settings, Themes, Picture Mode)...');
+    const p5Page = await browser.newPage({
+      viewport: { width: 1440, height: 900 },
+      deviceScaleFactor: 2,
+    });
+    await p5Page.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+    await p5Page.waitForSelector('.wood-board-frame');
+
+    // 6a. Main Menu Modal
+    await p5Page.click('#btn-menu');
+    await p5Page.waitForSelector('.main-menu-card');
+    const menuPath = path.join(screenshotsDir, 'main_menu_modal.png');
+    await p5Page.screenshot({ path: menuPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(menuPath)}`);
+
+    // 6b. How-To-Play Guide Modal
+    await p5Page.click('#menu-btn-howtoplay');
+    await p5Page.waitForSelector('.howtoplay-modal-card');
+    const howToPlayPath = path.join(screenshotsDir, 'how_to_play_modal.png');
+    await p5Page.screenshot({ path: howToPlayPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(howToPlayPath)}`);
+    await p5Page.click('#howtoplay-btn-done');
+
+    // 6c. Settings Modal
+    await p5Page.click('#btn-settings');
+    await p5Page.waitForSelector('.settings-modal-card');
+    const settingsPath = path.join(screenshotsDir, 'settings_modal.png');
+    await p5Page.screenshot({ path: settingsPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(settingsPath)}`);
+
+    // 6d. Switch to Dark Walnut Theme
+    await p5Page.click('#theme-btn-dark');
+    await p5Page.waitForTimeout(100);
+    await p5Page.click('#settings-btn-done');
+    await p5Page.waitForTimeout(200);
+    const darkWalnutPath = path.join(screenshotsDir, 'theme_dark_walnut_desktop.png');
+    await p5Page.screenshot({ path: darkWalnutPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(darkWalnutPath)}`);
+
+    // 6e. Switch to Picture Puzzle Mode (Rừng thông preset)
+    await p5Page.click('#btn-menu');
+    await p5Page.waitForSelector('.main-menu-card');
+    await p5Page.click('#menu-btn-picture');
+    await p5Page.waitForSelector('.picture-modal-card');
+    await p5Page.click('[data-preset-id="preset-pine"]');
+    await p5Page.click('#picture-btn-done');
+    await p5Page.waitForTimeout(300);
+    const pictureModePath = path.join(screenshotsDir, 'picture_mode_gameplay.png');
+    await p5Page.screenshot({ path: pictureModePath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(pictureModePath)}`);
+
+    // 6f. Picture Mode "Xem ảnh gốc" Preview
+    await p5Page.click('#btn-preview-picture');
+    await p5Page.waitForSelector('.picture-modal-card');
+    await p5Page.waitForTimeout(200);
+    const picturePreviewPath = path.join(screenshotsDir, 'picture_mode_preview.png');
+    await p5Page.screenshot({ path: picturePreviewPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(picturePreviewPath)}`);
+    await p5Page.click('#picture-btn-done');
+
+    await p5Page.close();
   } finally {
     await browser.close();
     server.kill();
@@ -284,6 +353,7 @@ async function run() {
   console.log(`Total screenshots captured: ${capturedCount}`);
   if (errors.length === 0) {
     console.log('✅ ALL RESPONSIVE & PLAYWRIGHT CHECKS PASSED 100%!');
+    process.exit(0);
   } else {
     console.error(`❌ ${errors.length} checks failed:`);
     errors.forEach((err) => console.error('  -', err));

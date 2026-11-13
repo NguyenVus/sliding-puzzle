@@ -60,6 +60,7 @@ describe('UI Modals Suite', () => {
       const onSoundChange = vi.fn();
       const onThemeChange = vi.fn();
       const onAnimationChange = vi.fn();
+      const onPictureModeChange = vi.fn();
       const onPictureNumbersChange = vi.fn();
       const onResetProgress = vi.fn();
 
@@ -68,6 +69,7 @@ describe('UI Modals Suite', () => {
         onSoundChange,
         onThemeChange,
         onAnimationChange,
+        onPictureModeChange,
         onPictureNumbersChange,
         onResetProgress,
       });
@@ -83,6 +85,14 @@ describe('UI Modals Suite', () => {
       const lightBtn = container.querySelector<HTMLButtonElement>('#theme-btn-light');
       lightBtn?.click();
       expect(onThemeChange).toHaveBeenCalledWith('wood-light');
+
+      // Picture mode toggle
+      const picModeToggle = container.querySelector<HTMLInputElement>('#setting-toggle-pic-mode');
+      if (picModeToggle) {
+        picModeToggle.checked = true;
+        picModeToggle.dispatchEvent(new Event('change'));
+        expect(onPictureModeChange).toHaveBeenCalledWith(true);
+      }
 
       // Sound toggle
       const soundToggle = container.querySelector<HTMLInputElement>('#setting-toggle-sound');
@@ -129,6 +139,8 @@ describe('UI Modals Suite', () => {
     it('displays picture preview and handles preset selection', () => {
       const onSelectPreset = vi.fn();
       const onUploadCustom = vi.fn();
+      const onApply = vi.fn();
+      const onDisablePictureMode = vi.fn();
       const onClose = vi.fn();
 
       const pictureModal = new PictureModalView(container, {
@@ -136,6 +148,8 @@ describe('UI Modals Suite', () => {
         gridSize: 3,
         onSelectPreset,
         onUploadCustom,
+        onApply,
+        onDisablePictureMode,
         onClose,
       });
 
@@ -148,14 +162,46 @@ describe('UI Modals Suite', () => {
       pineBtn?.click();
       expect(onSelectPreset).toHaveBeenCalledWith('preset-pine');
 
-      pictureModal.close();
+      // Click "Trở về xếp số cổ điển" button
+      const disableBtn = container.querySelector<HTMLButtonElement>('#picture-btn-disable-mode');
+      disableBtn?.click();
+      expect(onDisablePictureMode).toHaveBeenCalled();
       expect(pictureModal.isOpen()).toBe(false);
 
       // 2. Preview mode
       pictureModal.showPreview(3);
       expect(pictureModal.isOpen()).toBe(true);
       expect(container.textContent).toContain('Ảnh Gốc Hoàn Chỉnh');
+      expect(container.textContent).toContain('Trống');
       pictureModal.close();
+    });
+
+    it('preserves custom uploaded image and triggers onApply when clicking done', () => {
+      const onSelectPreset = vi.fn();
+      const onUploadCustom = vi.fn();
+      const onApply = vi.fn();
+
+      const customData = 'data:image/svg+xml;charset=utf-8,%3Csvg%3E%3C/svg%3E';
+      pictureManager.setCustomImage(customData);
+
+      const pictureModal = new PictureModalView(container, {
+        pictureManager,
+        gridSize: 3,
+        onSelectPreset,
+        onUploadCustom,
+        onApply,
+      });
+
+      pictureModal.showSelector(3);
+
+      const doneBtn = container.querySelector<HTMLButtonElement>('#picture-btn-done');
+      doneBtn?.click();
+
+      // Custom image must NOT be overwritten by preset!
+      expect(onSelectPreset).not.toHaveBeenCalled();
+      expect(onApply).toHaveBeenCalled();
+      expect(pictureManager.getActivePictureUrl()).toBe(customData);
+      expect(pictureModal.isOpen()).toBe(false);
     });
   });
 });

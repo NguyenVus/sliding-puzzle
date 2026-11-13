@@ -5,7 +5,68 @@ export interface PictureModalViewOptions {
   gridSize: number;
   onSelectPreset: (presetId: string) => void;
   onUploadCustom: (dataUrl: string) => void;
+  onApply?: () => void;
+  onDisablePictureMode?: () => void;
   onClose?: () => void;
+}
+
+/**
+ * Optimizes custom uploaded images by center-cropping to square
+ * and capping dimensions to max 1024px to ensure smooth 60fps rendering and low RAM usage.
+ */
+function processCustomImageFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result !== 'string') {
+        reject(new Error('Invalid file content'));
+        return;
+      }
+
+      // If SVG or environment lacks full Canvas image decoding, use raw data URL
+      if (
+        file.type === 'image/svg+xml' ||
+        typeof document === 'undefined' ||
+        typeof Image === 'undefined'
+      ) {
+        resolve(result);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const maxDim = 1024;
+          const minSide = Math.min(img.width, img.height);
+          const outDim = Math.min(maxDim, minSide);
+          canvas.width = outDim;
+          canvas.height = outDim;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(result);
+            return;
+          }
+
+          // Center-crop to square
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, outDim, outDim);
+
+          const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          resolve(canvas.toDataURL(outputType, 0.92));
+        } catch {
+          resolve(result);
+        }
+      };
+      img.onerror = () => resolve(result);
+      img.src = result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 export class PictureModalView {
@@ -13,6 +74,7 @@ export class PictureModalView {
   private readonly options: PictureModalViewOptions;
   private modalEl: HTMLElement | null = null;
   private isPreviewOnly = false;
+  private hasCustomSelected = false;
 
   constructor(container: HTMLElement, options: PictureModalViewOptions) {
     this.container = container;
@@ -46,6 +108,7 @@ export class PictureModalView {
     const presets = pm.getPresets();
     const activeUrl = pm.getActivePictureUrl();
     const activePresetId = pm.getActivePresetId();
+    this.hasCustomSelected = pm.hasCustomImage();
     const size = customGridSize ?? this.options.gridSize;
 
     this.modalEl = document.createElement('div');
@@ -57,7 +120,7 @@ export class PictureModalView {
     const presetsListHtml = presets
       .map(
         (p) => `
-        <button type="button" class="preset-choice-card ${p.id === activePresetId ? 'active' : ''}" data-preset-id="${p.id}">
+        <button type="button" class="preset-choice-card ${!this.hasCustomSelected && p.id === activePresetId ? 'active' : ''}" data-preset-id="${p.id}">
           <div class="preset-thumb-frame">
             <img src="${p.thumbnail}" alt="${p.name}" class="preset-thumb-img" />
           </div>
@@ -92,7 +155,11 @@ export class PictureModalView {
               <img id="main-preview-img" src="${activeUrl}" alt="Ảnh ghép gốc" class="full-preview-image" />
               <div class="preview-grid-overlay" id="preview-grid-overlay" style="--overlay-grid-size: ${size};">
                 ${Array.from({ length: size * size })
-                  .map((_, i) => `<div class="grid-cell-guide"><span class="cell-num">${i + 1}</span></div>`)
+                  .map((_, i) =>
+                    i === size * size - 1
+                      ? `<div class="grid-cell-guide blank-cell"><span class="cell-num cell-blank-guide">Trống</span></div>`
+                      : `<div class="grid-cell-guide"><span class="cell-num">${i + 1}</span></div>`
+                  )
                   .join('')}
               </div>
             </div>
@@ -118,6 +185,14 @@ export class PictureModalView {
                 <span>Tải ảnh từ thiết bị của bạn...</span>
               </label>
             </div>
+
+            <!-- Option to disable Picture Mode and return to classic numbered tiles -->
+            <div class="picture-disable-mode-box">
+              <button type="button" id="picture-btn-disable-mode" class="btn btn-classic-numbers">
+                <span class="btn-icon">🔢</span>
+                <span>Trở về xếp số cổ điển (Tắt ảnh)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -140,11 +215,27 @@ export class PictureModalView {
 
     const closeBtn = this.modalEl.querySelector<HTMLButtonElement>('#picture-btn-close-x');
     const doneBtn = this.modalEl.querySelector<HTMLButtonElement>('#picture-btn-done');
+    const disableModeBtn = this.modalEl.querySelector<HTMLButtonElement>('#picture-btn-disable-mode');
+
     closeBtn?.addEventListener('click', () => this.close());
+
     doneBtn?.addEventListener('click', () => {
       if (!this.isPreviewOnly) {
-        this.options.onSelectPreset(pm.getActivePresetId());
+        if (this.hasCustomSelected) {
+          if (this.options.onApply) {
+            this.options.onApply();
+          } else {
+            this.options.onUploadCustom(pm.getActivePictureUrl());
+          }
+        } else {
+          this.options.onSelectPreset(pm.getActivePresetId());
+        }
       }
+      this.close();
+    });
+
+    disableModeBtn?.addEventListener('click', () => {
+      this.options.onDisablePictureMode?.();
       this.close();
     });
 
@@ -165,6 +256,7 @@ export class PictureModalView {
         if (presetId) {
           presetButtons.forEach((b) => b.classList.remove('active'));
           btn.classList.add('active');
+          this.hasCustomSelected = false;
           this.options.onSelectPreset(presetId);
           const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');
           if (previewImg) {
@@ -176,22 +268,23 @@ export class PictureModalView {
 
     // Custom upload
     const fileInput = this.modalEl.querySelector<HTMLInputElement>('#custom-image-file-input');
-    fileInput?.addEventListener('change', () => {
+    fileInput?.addEventListener('change', async () => {
       const file = fileInput.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result;
-          if (typeof result === 'string') {
-            presetButtons.forEach((b) => b.classList.remove('active'));
-            this.options.onUploadCustom(result);
-            const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');
-            if (previewImg) {
-              previewImg.src = result;
-            }
+        try {
+          const optimizedDataUrl = await processCustomImageFile(file);
+          presetButtons.forEach((b) => b.classList.remove('active'));
+          this.hasCustomSelected = true;
+          this.options.onUploadCustom(optimizedDataUrl);
+          const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');
+          if (previewImg) {
+            previewImg.src = optimizedDataUrl;
           }
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+          console.error('Failed to process custom image:', err);
+        } finally {
+          fileInput.value = '';
+        }
       }
     });
   }

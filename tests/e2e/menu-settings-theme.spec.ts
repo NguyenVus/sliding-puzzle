@@ -104,4 +104,27 @@ test.describe('Main Menu, Settings, and Themes E2E', () => {
 
     await page.locator('#settings-btn-done').click();
   });
+
+  test('toggles picture mode in Settings', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    const picModeToggle = page.locator('#setting-toggle-pic-mode');
+
+    // Initially unchecked
+    await expect(picModeToggle).not.toBeChecked();
+
+    // Turn picture mode on
+    await picModeToggle.check();
+    await page.locator('#settings-btn-done').click();
+
+    // Board tiles should now be picture tiles
+    await expect(page.locator('.wood-tile').first()).toHaveClass(/is-picture-tile/);
+
+    // Re-open settings and turn off
+    await page.locator('#btn-settings').click();
+    await picModeToggle.uncheck();
+    await page.locator('#settings-btn-done').click();
+
+    // Tiles should return to classic
+    await expect(page.locator('.wood-tile').first()).not.toHaveClass(/is-picture-tile/);
+  });
 });

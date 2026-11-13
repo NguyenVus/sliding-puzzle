@@ -207,6 +207,9 @@ export class GameController {
       onAnimationChange: (enabled) => {
         this.setAnimationEnabled(enabled);
       },
+      onPictureModeChange: (enabled) => {
+        this.setPictureMode(enabled);
+      },
       onPictureNumbersChange: (enabled) => {
         this.pictureManager.setNumbersVisible(enabled);
         this.boardView.render(this.board, { animate: false });
@@ -231,15 +234,17 @@ export class GameController {
       gridSize: this.size,
       onSelectPreset: (presetId) => {
         this.pictureManager.selectPreset(presetId);
-        this.pictureManager.setEnabled(true);
-        this.hudView.setPictureModeActive(true);
-        this.boardView.render(this.board, { animate: false });
+        this.setPictureMode(true);
       },
       onUploadCustom: (dataUrl) => {
         this.pictureManager.setCustomImage(dataUrl);
-        this.pictureManager.setEnabled(true);
-        this.hudView.setPictureModeActive(true);
-        this.boardView.render(this.board, { animate: false });
+        this.setPictureMode(true);
+      },
+      onApply: () => {
+        this.setPictureMode(true);
+      },
+      onDisablePictureMode: () => {
+        this.setPictureMode(false);
       },
       onClose: () => {
         if (this.status === 'playing') this.startTimer();
@@ -282,7 +287,7 @@ export class GameController {
         if (this.modalView.isOpen()) {
           this.modalView.close();
         } else if (this.levelSelectView.isOpen()) {
-          this.levelSelectView.close();
+          this.closeLevelSelect();
         } else if (this.menuModalView.isOpen()) {
           this.menuModalView.close();
         } else if (this.settingsModalView.isOpen()) {
@@ -531,6 +536,7 @@ export class GameController {
     this.pictureManager.setEnabled(enabled);
     this.hudView.setPictureModeActive(enabled);
     this.boardView.render(this.board, { animate: false });
+    this.storageManager.updateSettings({ pictureModeEnabled: enabled });
   }
 
   public getSoundSynthesizer(): SoundSynthesizer {

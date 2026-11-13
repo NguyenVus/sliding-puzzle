@@ -11,6 +11,8 @@ export class SoundSynthesizer {
   private soundEnabled: boolean = true;
   private storageManager?: StorageManager;
   private unlockListenerAttached = false;
+  private unlockHandler: (() => void) | null = null;
+  private isDestroyed = false;
 
   constructor(options: SoundSynthesizerOptions = {}) {
     this.storageManager = options.storageManager;
@@ -28,6 +30,10 @@ export class SoundSynthesizer {
    * Safe AudioContext getter with lazy initialization.
    */
   private getAudioContext(): AudioContext | null {
+    if (this.isDestroyed) {
+      return null;
+    }
+
     if (this.ctx) {
       return this.ctx;
     }
@@ -61,27 +67,38 @@ export class SoundSynthesizer {
    * Listens for user gestures to unlock AudioContext if suspended by browser autoplay policy.
    */
   private attachAutoplayUnlock(): void {
-    if (typeof window === 'undefined' || this.unlockListenerAttached) {
+    if (typeof window === 'undefined' || this.unlockListenerAttached || this.isDestroyed) {
       return;
     }
 
     this.unlockListenerAttached = true;
-    const unlockHandler = () => {
+    this.unlockHandler = () => {
       void this.resumeContext();
-      window.removeEventListener('pointerdown', unlockHandler);
-      window.removeEventListener('keydown', unlockHandler);
-      window.removeEventListener('touchstart', unlockHandler);
+      this.detachAutoplayUnlock();
     };
 
-    window.addEventListener('pointerdown', unlockHandler, { once: true, passive: true });
-    window.addEventListener('keydown', unlockHandler, { once: true, passive: true });
-    window.addEventListener('touchstart', unlockHandler, { once: true, passive: true });
+    window.addEventListener('pointerdown', this.unlockHandler, { once: true, passive: true });
+    window.addEventListener('keydown', this.unlockHandler, { once: true, passive: true });
+    window.addEventListener('touchstart', this.unlockHandler, { once: true, passive: true });
+  }
+
+  private detachAutoplayUnlock(): void {
+    if (typeof window === 'undefined' || !this.unlockHandler) {
+      return;
+    }
+
+    window.removeEventListener('pointerdown', this.unlockHandler);
+    window.removeEventListener('keydown', this.unlockHandler);
+    window.removeEventListener('touchstart', this.unlockHandler);
+    this.unlockHandler = null;
+    this.unlockListenerAttached = false;
   }
 
   /**
    * Explicitly resumes the audio context.
    */
   public async resumeContext(): Promise<void> {
+    if (this.isDestroyed) return;
     const ctx = this.getAudioContext();
     if (ctx && ctx.state === 'suspended') {
       try {
@@ -124,14 +141,14 @@ export class SoundSynthesizer {
    * quick decay (~40ms), and subtle random pitch fluctuation (±8%) to prevent fatigue.
    */
   public playTileSlide(): void {
-    if (!this.soundEnabled) return;
+    if (!this.soundEnabled || this.isDestroyed) return;
     const ctx = this.getAudioContext();
     if (!ctx || !this.masterGain) return;
     if (ctx.state === 'suspended') {
       void ctx.resume();
     }
 
-    const t = ctx.currentTime;
+    const t = Math.max(ctx.currentTime, 0) + 0.002;
     // Micro pitch variation: +/- 8%
     const variation = 1 + (Math.random() - 0.5) * 0.16;
     const baseFreq = 540 * variation;
@@ -177,23 +194,23 @@ export class SoundSynthesizer {
    * Plays a sequence of harmonic chime notes with shimmering marimba/bell decay.
    */
   public playVictory(): void {
-    if (!this.soundEnabled) return;
+    if (!this.soundEnabled || this.isDestroyed) return;
     const ctx = this.getAudioContext();
     if (!ctx || !this.masterGain) return;
     if (ctx.state === 'suspended') {
       void ctx.resume();
     }
 
-    const t = ctx.currentTime;
+    const t = Math.max(ctx.currentTime, 0) + 0.002;
 
     // Victory arpeggio: G4 -> C5 -> E5 -> G5 -> C6 (Joyful major triad fanfare)
     const notes = [
-      { freq: 392.0, time: 0.0, duration: 0.35, gain: 0.35 },     // G4
-      { freq: 523.25, time: 0.09, duration: 0.35, gain: 0.4 },    // C5
-      { freq: 659.25, time: 0.18, duration: 0.35, gain: 0.45 },   // E5
-      { freq: 783.99, time: 0.27, duration: 0.5, gain: 0.5 },     // G5
-      { freq: 1046.5, time: 0.38, duration: 1.2, gain: 0.65 },    // C6 (Final bell)
-      { freq: 1318.5, time: 0.42, duration: 1.1, gain: 0.4 },     // E6 harmony
+      { freq: 392.0, time: 0.0, duration: 0.35, gain: 0.35 }, // G4
+      { freq: 523.25, time: 0.09, duration: 0.35, gain: 0.4 }, // C5
+      { freq: 659.25, time: 0.18, duration: 0.35, gain: 0.45 }, // E5
+      { freq: 783.99, time: 0.27, duration: 0.5, gain: 0.5 }, // G5
+      { freq: 1046.5, time: 0.38, duration: 1.2, gain: 0.65 }, // C6 (Final bell)
+      { freq: 1318.5, time: 0.42, duration: 1.1, gain: 0.4 }, // E6 harmony
     ];
 
     for (const note of notes) {
@@ -237,6 +254,8 @@ export class SoundSynthesizer {
    * Clean up Web Audio nodes and listeners.
    */
   public destroy(): void {
+    this.isDestroyed = true;
+    this.detachAutoplayUnlock();
     if (this.ctx && this.ctx.state !== 'closed') {
       try {
         void this.ctx.close();
@@ -247,4 +266,13 @@ export class SoundSynthesizer {
   }
 }
 
-export const defaultSoundSynthesizer = new SoundSynthesizer();
+let _defaultSoundSynthesizer: SoundSynthesizer | null = null;
+export const defaultSoundSynthesizer: SoundSynthesizer = new Proxy({} as SoundSynthesizer, {
+  get(_target, prop) {
+    if (!_defaultSoundSynthesizer) {
+      _defaultSoundSynthesizer = new SoundSynthesizer();
+    }
+    const val = Reflect.get(_defaultSoundSynthesizer, prop);
+    return typeof val === 'function' ? val.bind(_defaultSoundSynthesizer) : val;
+  },
+});

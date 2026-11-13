@@ -92,4 +92,48 @@ test.describe('Picture Puzzle Mode E2E', () => {
     const revertedMoves = await page.locator('#hud-moves-val').textContent();
     expect(Number(revertedMoves)).toBe(Number(initialMoves));
   });
+
+  test('switches back from Picture Mode to Classic Number Mode', async ({ page }) => {
+    // 1. Enable picture mode
+    await page.locator('#btn-menu').click();
+    await page.locator('#menu-btn-picture').click();
+    await page.locator('#picture-btn-done').click();
+
+    // Verify picture mode active
+    await expect(page.locator('.wood-tile').first()).toHaveClass(/is-picture-tile/);
+
+    // 2. Open picture modal and click "Trở về xếp số cổ điển"
+    await page.locator('#btn-menu').click();
+    await page.locator('#menu-btn-picture').click();
+    const disableBtn = page.locator('#picture-btn-disable-mode');
+    await expect(disableBtn).toBeVisible();
+    await disableBtn.click();
+
+    // 3. Board tiles must return to classic number style
+    await expect(page.locator('.wood-tile').first()).not.toHaveClass(/is-picture-tile/);
+    await expect(page.locator('#btn-preview-picture')).not.toBeVisible();
+  });
+
+  test('uploads custom image and preserves it upon clicking done', async ({ page }) => {
+    await page.locator('#btn-menu').click();
+    await page.locator('#menu-btn-picture').click();
+
+    // Upload a custom SVG image via the file input
+    const fileInput = page.locator('#custom-image-file-input');
+    await fileInput.setInputFiles('tests/fixtures/sample.svg');
+
+    // Wait for preview image to update
+    const previewImg = page.locator('#main-preview-img');
+    await expect(previewImg).toHaveAttribute('src', /data:image\/svg\+xml/);
+
+    // Click "Áp Dụng & Chơi Ngay"
+    await page.locator('#picture-btn-done').click();
+    await expect(page.locator('.picture-modal-card')).not.toBeVisible();
+
+    // Verify first tile has the custom uploaded image, NOT fuji preset
+    const firstTile = page.locator('.wood-tile.is-picture-tile').first();
+    await expect(firstTile).toBeVisible();
+    const bgStyle = await firstTile.evaluate((el) => el.style.backgroundImage);
+    expect(bgStyle).toContain('data:image/svg+xml');
+  });
 });

@@ -19,6 +19,7 @@ export class PictureManager {
     this.storageManager = storageManager;
     if (this.storageManager) {
       const settings = this.storageManager.getSettings();
+      this.isPictureModeEnabled = settings.pictureModeEnabled ?? false;
       this.showNumbersInPicture = settings.pictureNumbersEnabled;
       if (settings.selectedPictureId) {
         this.activePresetId = settings.selectedPictureId;
@@ -32,11 +33,19 @@ export class PictureManager {
 
   public setEnabled(enabled: boolean): void {
     this.isPictureModeEnabled = enabled;
+    if (this.storageManager) {
+      this.storageManager.updateSettings({ pictureModeEnabled: enabled });
+    }
   }
 
   public toggleEnabled(): boolean {
-    this.isPictureModeEnabled = !this.isPictureModeEnabled;
+    const nextState = !this.isPictureModeEnabled;
+    this.setEnabled(nextState);
     return this.isPictureModeEnabled;
+  }
+
+  public hasCustomImage(): boolean {
+    return this.customImageUrl !== null;
   }
 
   public isNumbersVisible(): boolean {

@@ -99,4 +99,19 @@ describe('SoundSynthesizer', () => {
       (window as unknown as { AudioContext: unknown }).AudioContext = originalAudioContext;
     }
   });
+
+  it('cleans up event listeners and prevents recreation after destroy', () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+    const synth = new SoundSynthesizer();
+    synth.destroy();
+
+    expect(removeSpy).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith('touchstart', expect.any(Function));
+
+    // After destruction, calling play methods should not throw or recreate context
+    expect(() => synth.playTileSlide()).not.toThrow();
+    expect(() => synth.playVictory()).not.toThrow();
+    removeSpy.mockRestore();
+  });
 });

@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   soundEnabled: true,
   theme: 'wood-light',
   animationEnabled: true,
+  pictureModeEnabled: false,
   pictureNumbersEnabled: true,
   selectedPictureId: 'preset-fuji',
 };

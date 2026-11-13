@@ -6,6 +6,7 @@ export interface SettingsModalViewOptions {
   onSoundChange: (enabled: boolean) => void;
   onThemeChange: (theme: WoodTheme) => void;
   onAnimationChange: (enabled: boolean) => void;
+  onPictureModeChange?: (enabled: boolean) => void;
   onPictureNumbersChange: (enabled: boolean) => void;
   onResetProgress: () => void;
   onClose?: () => void;
@@ -108,6 +109,21 @@ export class SettingsModalView {
             </label>
           </div>
 
+          <!-- Picture Mode -->
+          <div class="setting-item-row">
+            <div class="setting-item-label">
+              <span class="setting-icon">🖼️</span>
+              <div>
+                <span class="setting-title">Chế độ ghép ảnh</span>
+                <span class="setting-desc">Ghép tranh nghệ thuật thay vì số (Tắt để xếp số)</span>
+              </div>
+            </div>
+            <label class="toggle-switch" aria-label="Bật/Tắt chế độ ghép ảnh">
+              <input type="checkbox" id="setting-toggle-pic-mode" ${currentSettings.pictureModeEnabled ? 'checked' : ''} />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
           <!-- Picture Mode Numbers -->
           <div class="setting-item-row">
             <div class="setting-item-label">
@@ -193,6 +209,12 @@ export class SettingsModalView {
     const animToggle = this.modalEl.querySelector<HTMLInputElement>('#setting-toggle-anim');
     animToggle?.addEventListener('change', () => {
       this.options.onAnimationChange(animToggle.checked);
+    });
+
+    // Picture mode toggle
+    const picModeToggle = this.modalEl.querySelector<HTMLInputElement>('#setting-toggle-pic-mode');
+    picModeToggle?.addEventListener('change', () => {
+      this.options.onPictureModeChange?.(picModeToggle.checked);
     });
 
     // Picture numbers toggle

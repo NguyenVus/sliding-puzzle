@@ -6,6 +6,7 @@ export interface UserSettings {
   soundEnabled: boolean;
   theme: WoodTheme;
   animationEnabled: boolean;
+  pictureModeEnabled: boolean;
   pictureNumbersEnabled: boolean;
   selectedPictureId: string;
 }

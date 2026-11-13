@@ -19,11 +19,20 @@ describe('PictureManager', () => {
     expect(manager.getPresets().length).toBeGreaterThanOrEqual(3);
   });
 
-  it('toggles picture mode on and off', () => {
+  it('toggles picture mode on and off and persists to storage', () => {
     expect(manager.toggleEnabled()).toBe(true);
     expect(manager.isEnabled()).toBe(true);
+    expect(storage.getSettings().pictureModeEnabled).toBe(true);
+
     expect(manager.toggleEnabled()).toBe(false);
     expect(manager.isEnabled()).toBe(false);
+    expect(storage.getSettings().pictureModeEnabled).toBe(false);
+  });
+
+  it('initializes picture mode state from storage when preconfigured', () => {
+    storage.updateSettings({ pictureModeEnabled: true });
+    const configuredManager = new PictureManager(storage);
+    expect(configuredManager.isEnabled()).toBe(true);
   });
 
   it('selects preset and updates storage', () => {

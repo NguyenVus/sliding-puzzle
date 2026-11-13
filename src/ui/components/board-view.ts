@@ -162,6 +162,7 @@ export class BoardView {
           tileEl.style.backgroundSize = bgSlice.backgroundSize;
           tileEl.style.backgroundPosition = bgSlice.backgroundPosition;
           tileEl.style.backgroundRepeat = 'no-repeat';
+          tileEl.style.backgroundOrigin = 'border-box';
         }
 
         if (!this.pictureManager.isNumbersVisible()) {
@@ -176,6 +177,7 @@ export class BoardView {
         tileEl.style.backgroundSize = '';
         tileEl.style.backgroundPosition = '';
         tileEl.style.backgroundRepeat = '';
+        tileEl.style.backgroundOrigin = '';
       }
 
       const isMovable = movableIndices.has(index);

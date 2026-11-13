@@ -6,7 +6,7 @@ export interface PicturePreset {
 }
 
 // Crisp, lightweight vector art data URIs
-const FUJI_SUNSET_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
+const FUJI_SUNSET_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
   <defs>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -70,7 +70,7 @@ const FUJI_SUNSET_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
 </svg>
 `)}`;
 
-const PINE_FOREST_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
+const PINE_FOREST_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
   <defs>
     <linearGradient id="nightSky" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -115,7 +115,7 @@ const PINE_FOREST_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
 </svg>
 `)}`;
 
-const OCEAN_WAVE_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`
+const OCEAN_WAVE_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
   <defs>
     <linearGradient id="oceanSky" x1="0%" y1="0%" x2="0%" y2="100%">

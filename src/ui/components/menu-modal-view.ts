@@ -1,3 +1,5 @@
+import { renderIcon } from '../icons';
+
 export interface MenuModalViewOptions {
   onSelectCampaign: () => void;
   onSelectFreePlay: () => void;
@@ -34,59 +36,59 @@ export class MenuModalView {
       <div class="app-modal-card main-menu-card">
         <header class="app-modal-header">
           <div class="menu-brand-header">
-            <span class="menu-brand-icon">🪵</span>
+            <span class="menu-brand-icon">${renderIcon('levels', { size: 24 })}</span>
             <div>
               <h2 id="main-menu-title" class="app-modal-title">Menu Trò Chơi</h2>
               <span class="menu-brand-sub">Sliding Puzzle · Phong Cách Gỗ</span>
             </div>
           </div>
-          <button type="button" id="menu-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng menu">✕</button>
+          <button type="button" id="menu-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng menu">${renderIcon('close', { size: 18 })}</button>
         </header>
 
         <nav class="main-menu-nav" aria-label="Menu chính">
           <button type="button" id="menu-btn-campaign" class="menu-item-btn btn-primary-gradient">
-            <span class="menu-item-icon">🏆</span>
+            <span class="menu-item-icon">${renderIcon('levels', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Chơi theo màn</span>
               <span class="menu-item-desc">30 cấp độ từ 3×3 đến 8×8 thử thách</span>
             </div>
-            <span class="menu-item-arrow">›</span>
+            <span class="menu-item-arrow">${renderIcon('chevron-right', { size: 16 })}</span>
           </button>
 
           <button type="button" id="menu-btn-freeplay" class="menu-item-btn">
-            <span class="menu-item-icon">🎲</span>
+            <span class="menu-item-icon">${renderIcon('freeplay', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Chơi tự do</span>
               <span class="menu-item-desc">Tùy chọn kích thước 3×3 đến 8×8 ngẫu nhiên</span>
             </div>
-            <span class="menu-item-arrow">›</span>
+            <span class="menu-item-arrow">${renderIcon('chevron-right', { size: 16 })}</span>
           </button>
 
           <button type="button" id="menu-btn-picture" class="menu-item-btn">
-            <span class="menu-item-icon">🖼️</span>
+            <span class="menu-item-icon">${renderIcon('picture', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Chế độ ghép ảnh</span>
               <span class="menu-item-desc">Ghép tranh nghệ thuật hoặc tải ảnh của bạn</span>
             </div>
-            <span class="menu-item-arrow">›</span>
+            <span class="menu-item-arrow">${renderIcon('chevron-right', { size: 16 })}</span>
           </button>
 
           <button type="button" id="menu-btn-settings" class="menu-item-btn">
-            <span class="menu-item-icon">⚙️</span>
+            <span class="menu-item-icon">${renderIcon('settings', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Cài đặt</span>
               <span class="menu-item-desc">Âm thanh, chủ đề gỗ sáng/tối, hoạt họa</span>
             </div>
-            <span class="menu-item-arrow">›</span>
+            <span class="menu-item-arrow">${renderIcon('chevron-right', { size: 16 })}</span>
           </button>
 
           <button type="button" id="menu-btn-howtoplay" class="menu-item-btn">
-            <span class="menu-item-icon">📖</span>
+            <span class="menu-item-icon">${renderIcon('guide', { size: 22 })}</span>
             <div class="menu-item-content">
               <span class="menu-item-title">Hướng dẫn luật chơi</span>
               <span class="menu-item-desc">Luật xếp số, cách tính sao & phím tắt</span>
             </div>
-            <span class="menu-item-arrow">›</span>
+            <span class="menu-item-arrow">${renderIcon('chevron-right', { size: 16 })}</span>
           </button>
         </nav>
       </div>

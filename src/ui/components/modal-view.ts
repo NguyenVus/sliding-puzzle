@@ -1,3 +1,5 @@
+import { renderIcon } from '../icons';
+
 export interface WinStats {
   moves: number;
   timeFormatted: string;
@@ -78,7 +80,7 @@ export class ModalView {
     }
 
     const newRecordBadgeHtml = stats.isNewRecord
-      ? `<div class="new-record-badge" id="modal-new-record-badge">🏅 KỶ LỤC MỚI!</div>`
+      ? `<div class="new-record-badge" id="modal-new-record-badge"><span class="btn-icon">${renderIcon('trophy', { size: 16 })}</span> KỶ LỤC MỚI!</div>`
       : '';
 
     let starsDisplayHtml = '';
@@ -99,13 +101,13 @@ export class ModalView {
     if (isCampaign && stats.nextLevelId) {
       actionButtonsHtml = `
         <button type="button" id="modal-btn-next" class="btn btn-primary modal-action-btn">
-          ▶ Màn tiếp theo
+          <span class="btn-icon">${renderIcon('play', { size: 18 })}</span> <span>Màn tiếp theo</span>
         </button>
         <button type="button" id="modal-btn-restart" class="btn modal-action-btn">
-          ↺ Chơi lại
+          <span class="btn-icon">${renderIcon('restart', { size: 18 })}</span> <span>Chơi lại</span>
         </button>
         <button type="button" id="modal-btn-levels" class="btn modal-action-btn">
-          🏆 Chọn màn
+          <span class="btn-icon">${renderIcon('levels', { size: 18 })}</span> <span>Chọn màn</span>
         </button>
         <button type="button" id="modal-btn-close" class="btn modal-action-btn btn-ghost" aria-label="Đóng bảng kết quả">
           Xem lại bàn cờ
@@ -114,13 +116,13 @@ export class ModalView {
     } else {
       actionButtonsHtml = `
         <button type="button" id="modal-btn-new" class="btn btn-primary modal-action-btn">
-          ⚡ Ván mới
+          <span class="btn-icon">${renderIcon('shuffle', { size: 18 })}</span> <span>Ván mới</span>
         </button>
         <button type="button" id="modal-btn-restart" class="btn modal-action-btn">
-          ↺ Chơi lại
+          <span class="btn-icon">${renderIcon('restart', { size: 18 })}</span> <span>Chơi lại</span>
         </button>
         <button type="button" id="modal-btn-levels" class="btn modal-action-btn">
-          🏆 Chọn màn
+          <span class="btn-icon">${renderIcon('levels', { size: 18 })}</span> <span>Chọn màn</span>
         </button>
         <button type="button" id="modal-btn-close" class="btn modal-action-btn btn-ghost" aria-label="Đóng bảng kết quả">
           Xem lại bàn cờ
@@ -131,7 +133,7 @@ export class ModalView {
     this.modalEl.innerHTML = `
       <div class="victory-card">
         <div class="victory-ribbon">
-          <span class="victory-badge" aria-hidden="true">🏆</span>
+          <span class="victory-badge" aria-hidden="true">${renderIcon('trophy', { size: 44 })}</span>
           ${newRecordBadgeHtml}
           <h2 id="victory-title" class="victory-title">${titleText}</h2>
           <p class="victory-subtitle">${subtitleText}</p>

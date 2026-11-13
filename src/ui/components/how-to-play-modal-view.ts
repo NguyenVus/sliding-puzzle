@@ -1,3 +1,5 @@
+import { renderIcon } from '../icons';
+
 export interface HowToPlayModalViewOptions {
   onClose?: () => void;
 }
@@ -29,19 +31,19 @@ export class HowToPlayModalView {
       <div class="app-modal-card howtoplay-modal-card">
         <header class="app-modal-header">
           <div class="menu-brand-header">
-            <span class="menu-brand-icon">📖</span>
+            <span class="menu-brand-icon">${renderIcon('guide', { size: 24 })}</span>
             <div>
               <h2 id="howtoplay-modal-title" class="app-modal-title">Hướng Dẫn Luật Chơi</h2>
               <span class="menu-brand-sub">Luật chơi, cách tính sao & phím tắt</span>
             </div>
           </div>
-          <button type="button" id="howtoplay-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng hướng dẫn">✕</button>
+          <button type="button" id="howtoplay-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng hướng dẫn">${renderIcon('close', { size: 18 })}</button>
         </header>
 
         <div class="howtoplay-body-scroll">
           <!-- Section 1: Objective -->
           <section class="guide-section">
-            <h3 class="guide-section-title">🎯 1. Mục Tiêu Trò Chơi</h3>
+            <h3 class="guide-section-title"><span class="guide-title-icon">${renderIcon('target', { size: 18 })}</span> 1. Mục Tiêu Trò Chơi</h3>
             <p class="guide-text">
               Sắp xếp các ô số theo thứ tự tăng dần từ <strong>1 đến N² - 1</strong> theo chiều từ trái sang phải, từ trên xuống dưới. Vị trí góc dưới cùng bên phải là <strong>ô trống</strong>.
             </p>
@@ -49,7 +51,7 @@ export class HowToPlayModalView {
 
           <!-- Section 2: How to move -->
           <section class="guide-section">
-            <h3 class="guide-section-title">👆 2. Cách Di Chuyển Ô</h3>
+            <h3 class="guide-section-title"><span class="guide-title-icon">${renderIcon('hand', { size: 18 })}</span> 2. Cách Di Chuyển Ô</h3>
             <ul class="guide-list">
               <li><strong>Nhấp hoặc Chạm:</strong> Nhấp trực tiếp vào bất kỳ ô nào nằm cạnh ô trống để trượt ô đó vào vị trí trống.</li>
               <li><strong>Vuốt (Swipe):</strong> Trên màn hình cảm ứng điện thoại hoặc máy tính bảng, bạn có thể vuốt ngón tay theo hướng muốn ô di chuyển.</li>
@@ -58,7 +60,7 @@ export class HowToPlayModalView {
 
           <!-- Section 3: Star Evaluation -->
           <section class="guide-section">
-            <h3 class="guide-section-title">⭐ 3. Quy Tắc Tính Sao (Campaign Mode)</h3>
+            <h3 class="guide-section-title"><span class="guide-title-icon">${renderIcon('trophy', { size: 18 })}</span> 3. Quy Tắc Tính Sao (Campaign Mode)</h3>
             <div class="guide-star-rules">
               <div class="star-rule-row">
                 <span class="star-badge">★☆☆</span>
@@ -80,13 +82,13 @@ export class HowToPlayModalView {
               </div>
             </div>
             <p class="guide-note">
-              <em>⚠️ Lưu ý: Khi sử dụng nút <strong>Gợi ý (💡)</strong> hoặc <strong>Tự giải (🤖)</strong>, điểm tối đa màn chơi đó sẽ giới hạn ở mức 1 sao.</em>
+              <em>⚠️ Lưu ý: Khi sử dụng nút <strong>Gợi ý (<span class="inline-icon">${renderIcon('hint', { size: 14 })}</span>)</strong> hoặc <strong>Tự giải (<span class="inline-icon">${renderIcon('auto-solve', { size: 14 })}</span>)</strong>, điểm tối đa màn chơi đó sẽ giới hạn ở mức 1 sao.</em>
             </p>
           </section>
 
           <!-- Section 4: Keyboard Shortcuts -->
           <section class="guide-section">
-            <h3 class="guide-section-title">⌨️ 4. Phím Tắt Tiện Lợi (Máy tính)</h3>
+            <h3 class="guide-section-title"><span class="guide-title-icon">${renderIcon('keyboard', { size: 18 })}</span> 4. Phím Tắt Tiện Lợi (Máy tính)</h3>
             <div class="keyboard-shortcuts-grid">
               <div class="shortcut-item">
                 <div class="key-combo"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> hoặc <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>

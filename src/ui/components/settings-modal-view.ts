@@ -1,5 +1,6 @@
 import type { StorageManager } from '../../storage/storage-manager';
 import type { BoardTheme } from '../../storage/types';
+import { renderIcon } from '../icons';
 
 export interface SettingsModalViewOptions {
   storageManager: StorageManager;
@@ -42,20 +43,20 @@ export class SettingsModalView {
       <div class="app-modal-card settings-modal-card">
         <header class="app-modal-header">
           <div class="menu-brand-header">
-            <span class="menu-brand-icon">⚙️</span>
+            <span class="menu-brand-icon">${renderIcon('settings', { size: 24 })}</span>
             <div>
               <h2 id="settings-modal-title" class="app-modal-title">Cài Đặt</h2>
               <span class="menu-brand-sub">Tùy biến trải nghiệm trò chơi</span>
             </div>
           </div>
-          <button type="button" id="settings-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng cài đặt">✕</button>
+          <button type="button" id="settings-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng cài đặt">${renderIcon('close', { size: 18 })}</button>
         </header>
 
         <div class="settings-body-list">
           <!-- Sound FX -->
           <div class="setting-item-row">
             <div class="setting-item-label">
-              <span class="setting-icon" id="sound-status-icon">${currentSettings.soundEnabled ? '🔊' : '🔇'}</span>
+              <span class="setting-icon" id="sound-status-icon">${renderIcon(currentSettings.soundEnabled ? 'volume-on' : 'volume-off')}<span class="sr-only">${currentSettings.soundEnabled ? '🔊' : '🔇'}</span></span>
               <div>
                 <span class="setting-title">Âm thanh hiệu ứng</span>
                 <span class="setting-desc">Tiếng gõ gỗ và hợp âm chiến thắng</span>
@@ -70,7 +71,7 @@ export class SettingsModalView {
           <!-- Haptic Feedback -->
           <div class="setting-item-row">
             <div class="setting-item-label">
-              <span class="setting-icon" id="haptic-status-icon">${currentSettings.hapticEnabled ? '📳' : '📴'}</span>
+              <span class="setting-icon" id="haptic-status-icon">${renderIcon('haptic')}<span class="sr-only">${currentSettings.hapticEnabled ? '📳' : '📴'}</span></span>
               <div>
                 <span class="setting-title">Rung phản hồi (Haptic)</span>
                 <span class="setting-desc">Cảm giác xúc giác khi trượt ô và chạm nút (Mobile)</span>
@@ -85,7 +86,7 @@ export class SettingsModalView {
           <!-- Theme -->
           <div class="setting-item-col">
             <div class="setting-item-label">
-              <span class="setting-icon">🎨</span>
+              <span class="setting-icon">${renderIcon('palette', { size: 20 })}</span>
               <div>
                 <span class="setting-title">Giao diện bàn cờ</span>
                 <span class="setting-desc">Chọn phong cách và chất liệu yêu thích</span>
@@ -93,7 +94,7 @@ export class SettingsModalView {
             </div>
             <div class="theme-picker-group" role="radiogroup" aria-label="Chọn chủ đề bàn cờ">
               <button type="button" id="theme-btn-light" class="theme-choice-btn ${currentSettings.theme === 'wood-light' ? 'active' : ''}" data-theme="wood-light" aria-checked="${currentSettings.theme === 'wood-light'}">
-                <span class="theme-sample wood-light-sample">🌲</span>
+                <span class="theme-sample theme-swatch wood-light-sample" aria-hidden="true"></span>
                 <div class="theme-info">
                   <span class="theme-name">Gỗ Sáng (Wood Light)</span>
                   <span class="theme-desc">Trang nhã, ấm áp, thanh lịch</span>
@@ -101,7 +102,7 @@ export class SettingsModalView {
               </button>
 
               <button type="button" id="theme-btn-dark" class="theme-choice-btn ${currentSettings.theme === 'wood-dark' ? 'active' : ''}" data-theme="wood-dark" aria-checked="${currentSettings.theme === 'wood-dark'}">
-                <span class="theme-sample wood-dark-sample">🪵</span>
+                <span class="theme-sample theme-swatch wood-dark-sample" aria-hidden="true"></span>
                 <div class="theme-info">
                   <span class="theme-name">Gỗ Óc Chó (Wood Dark)</span>
                   <span class="theme-desc">Cổ điển, sang trọng, tương phản cao</span>
@@ -109,7 +110,7 @@ export class SettingsModalView {
               </button>
 
               <button type="button" id="theme-btn-marble" class="theme-choice-btn ${currentSettings.theme === 'marble-gold' ? 'active' : ''}" data-theme="marble-gold" aria-checked="${currentSettings.theme === 'marble-gold'}">
-                <span class="theme-sample marble-gold-sample">🏛️</span>
+                <span class="theme-sample theme-swatch marble-gold-sample" aria-hidden="true"></span>
                 <div class="theme-info">
                   <span class="theme-name">Cẩm Thạch Vàng (Marble & Gold)</span>
                   <span class="theme-desc">Đá trắng vân mây, mạ vàng ánh kim hoàng gia</span>
@@ -117,7 +118,7 @@ export class SettingsModalView {
               </button>
 
               <button type="button" id="theme-btn-tatami" class="theme-choice-btn ${currentSettings.theme === 'tatami-sakura' ? 'active' : ''}" data-theme="tatami-sakura" aria-checked="${currentSettings.theme === 'tatami-sakura'}">
-                <span class="theme-sample tatami-sakura-sample">🌸</span>
+                <span class="theme-sample theme-swatch tatami-sakura-sample" aria-hidden="true"></span>
                 <div class="theme-info">
                   <span class="theme-name">Tatami Anh Đào (Tatami & Sakura)</span>
                   <span class="theme-desc">Chiếu cói truyền thống, thông & đỏ sakura</span>
@@ -125,7 +126,7 @@ export class SettingsModalView {
               </button>
 
               <button type="button" id="theme-btn-neon" class="theme-choice-btn ${currentSettings.theme === 'neon-cyberpunk' ? 'active' : ''}" data-theme="neon-cyberpunk" aria-checked="${currentSettings.theme === 'neon-cyberpunk'}">
-                <span class="theme-sample neon-cyberpunk-sample">🌌</span>
+                <span class="theme-sample theme-swatch neon-cyberpunk-sample" aria-hidden="true"></span>
                 <div class="theme-info">
                   <span class="theme-name">Neon Cyberpunk (Dark Glow)</span>
                   <span class="theme-desc">Kính mờ bóng tối, viền LED xanh ngọc & tím hồng</span>
@@ -137,7 +138,7 @@ export class SettingsModalView {
           <!-- Animations -->
           <div class="setting-item-row">
             <div class="setting-item-label">
-              <span class="setting-icon">⚡</span>
+              <span class="setting-icon">${renderIcon('wand', { size: 20 })}</span>
               <div>
                 <span class="setting-title">Hiệu ứng chuyển động</span>
                 <span class="setting-desc">Trượt mượt mà (Tắt để trượt tức thì)</span>
@@ -152,7 +153,7 @@ export class SettingsModalView {
           <!-- Picture Mode -->
           <div class="setting-item-row">
             <div class="setting-item-label">
-              <span class="setting-icon">🖼️</span>
+              <span class="setting-icon">${renderIcon('picture', { size: 20 })}</span>
               <div>
                 <span class="setting-title">Chế độ ghép ảnh</span>
                 <span class="setting-desc">Ghép tranh nghệ thuật thay vì số (Tắt để xếp số)</span>
@@ -167,7 +168,7 @@ export class SettingsModalView {
           <!-- Picture Mode Numbers -->
           <div class="setting-item-row">
             <div class="setting-item-label">
-              <span class="setting-icon">🔢</span>
+              <span class="setting-icon">${renderIcon('grid', { size: 20 })}</span>
               <div>
                 <span class="setting-title">Số phụ trong chế độ ảnh</span>
                 <span class="setting-desc">Hiện số nhỏ ở góc ô để dễ nhận biết</span>
@@ -182,7 +183,7 @@ export class SettingsModalView {
           <!-- Reset Progress -->
           <div class="setting-item-col danger-zone">
             <div class="setting-item-label">
-              <span class="setting-icon">🗑️</span>
+              <span class="setting-icon">${renderIcon('trash', { size: 20 })}</span>
               <div>
                 <span class="setting-title">Dữ liệu trò chơi</span>
                 <span class="setting-desc">Xóa toàn bộ điểm số và mở khóa lại từ Màn 1</span>
@@ -221,7 +222,7 @@ export class SettingsModalView {
     const soundIcon = this.modalEl.querySelector<HTMLElement>('#sound-status-icon');
     soundToggle?.addEventListener('change', () => {
       const enabled = soundToggle.checked;
-      if (soundIcon) soundIcon.textContent = enabled ? '🔊' : '🔇';
+      if (soundIcon) soundIcon.innerHTML = `${renderIcon(enabled ? 'volume-on' : 'volume-off')}<span class="sr-only">${enabled ? '🔊' : '🔇'}</span>`;
       this.options.onSoundChange(enabled);
     });
 
@@ -230,7 +231,7 @@ export class SettingsModalView {
     const hapticIcon = this.modalEl.querySelector<HTMLElement>('#haptic-status-icon');
     hapticToggle?.addEventListener('change', () => {
       const enabled = hapticToggle.checked;
-      if (hapticIcon) hapticIcon.textContent = enabled ? '📳' : '📴';
+      if (hapticIcon) hapticIcon.innerHTML = `${renderIcon('haptic')}<span class="sr-only">${enabled ? '📳' : '📴'}</span>`;
       this.options.onHapticChange?.(enabled);
     });
 

@@ -1,5 +1,6 @@
 import type { PictureManager } from '../../picture/picture-manager';
 import type { PresetCategory } from '../../picture/presets';
+import { renderIcon } from '../icons';
 
 export interface PictureModalViewOptions {
   pictureManager: PictureManager;
@@ -164,13 +165,13 @@ export class PictureModalView {
       <div class="app-modal-card picture-modal-card">
         <header class="app-modal-header">
           <div class="menu-brand-header">
-            <span class="menu-brand-icon">🖼️</span>
+            <span class="menu-brand-icon">${renderIcon('picture', { size: 24 })}</span>
             <div>
               <h2 id="picture-modal-title" class="app-modal-title">${titleText}</h2>
               <span class="menu-brand-sub">${subText}</span>
             </div>
           </div>
-          <button type="button" id="picture-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng bảng ảnh">✕</button>
+          <button type="button" id="picture-btn-close-x" class="modal-close-icon-btn" aria-label="Đóng bảng ảnh">${renderIcon('close', { size: 18 })}</button>
         </header>
 
         <div class="picture-modal-body">
@@ -205,27 +206,27 @@ export class PictureModalView {
             <!-- Category Filter Bar -->
             <div class="category-filter-bar" role="tablist" aria-label="Lọc tranh theo chủ đề">
               <button type="button" class="category-tab-btn ${this.selectedCategory === 'all' ? 'active' : ''}" data-category="all" role="tab" aria-selected="${this.selectedCategory === 'all'}" id="cat-tab-all" aria-controls="presets-gallery-grid">
-                <span class="category-tab-icon">✨</span>
+                <span class="category-tab-icon">${renderIcon('sparkles', { size: 16 })}</span>
                 <span class="category-tab-label">Tất cả</span>
                 <span class="category-tab-count">${categoryCounts.all}</span>
               </button>
               <button type="button" class="category-tab-btn ${this.selectedCategory === 'animals' ? 'active' : ''}" data-category="animals" role="tab" aria-selected="${this.selectedCategory === 'animals'}" id="cat-tab-animals" aria-controls="presets-gallery-grid">
-                <span class="category-tab-icon">🐾</span>
+                <span class="category-tab-icon">${renderIcon('paw', { size: 16 })}</span>
                 <span class="category-tab-label">Động vật</span>
                 <span class="category-tab-count">${categoryCounts.animals}</span>
               </button>
               <button type="button" class="category-tab-btn ${this.selectedCategory === 'nature' ? 'active' : ''}" data-category="nature" role="tab" aria-selected="${this.selectedCategory === 'nature'}" id="cat-tab-nature" aria-controls="presets-gallery-grid">
-                <span class="category-tab-icon">🌄</span>
+                <span class="category-tab-icon">${renderIcon('mountain', { size: 16 })}</span>
                 <span class="category-tab-label">Thiên nhiên</span>
                 <span class="category-tab-count">${categoryCounts.nature}</span>
               </button>
               <button type="button" class="category-tab-btn ${this.selectedCategory === 'space' ? 'active' : ''}" data-category="space" role="tab" aria-selected="${this.selectedCategory === 'space'}" id="cat-tab-space" aria-controls="presets-gallery-grid">
-                <span class="category-tab-icon">🚀</span>
+                <span class="category-tab-icon">${renderIcon('rocket', { size: 16 })}</span>
                 <span class="category-tab-label">Vũ trụ</span>
                 <span class="category-tab-count">${categoryCounts.space}</span>
               </button>
               <button type="button" class="category-tab-btn ${this.selectedCategory === 'art' ? 'active' : ''}" data-category="art" role="tab" aria-selected="${this.selectedCategory === 'art'}" id="cat-tab-art" aria-controls="presets-gallery-grid">
-                <span class="category-tab-icon">🎨</span>
+                <span class="category-tab-icon">${renderIcon('palette', { size: 16 })}</span>
                 <span class="category-tab-label">Nghệ thuật</span>
                 <span class="category-tab-count">${categoryCounts.art}</span>
               </button>
@@ -244,7 +245,7 @@ export class PictureModalView {
               <div id="custom-upload-error" class="custom-upload-error-msg" role="alert" style="display: none;"></div>
               <input type="file" id="custom-image-file-input" accept="image/png, image/jpeg, image/webp, image/svg+xml" class="visually-hidden" />
               <label for="custom-image-file-input" class="btn btn-upload-image" tabindex="0" role="button" aria-label="Tải ảnh từ thiết bị của bạn">
-                <span class="btn-icon">📁</span>
+                <span class="btn-icon">${renderIcon('folder', { size: 18 })}</span>
                 <span>Tải ảnh từ thiết bị của bạn...</span>
               </label>
             </div>
@@ -252,7 +253,7 @@ export class PictureModalView {
             <!-- Option to disable Picture Mode and return to classic numbered tiles -->
             <div class="picture-disable-mode-box">
               <button type="button" id="picture-btn-disable-mode" class="btn btn-classic-numbers">
-                <span class="btn-icon">🔢</span>
+                <span class="btn-icon">${renderIcon('grid', { size: 18 })}</span>
                 <span>Trở về xếp số cổ điển (Tắt ảnh)</span>
               </button>
             </div>

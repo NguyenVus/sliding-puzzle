@@ -1,6 +1,7 @@
 import type { LevelConfig } from '../../levels/types';
 import type { LevelRecord } from '../../storage/types';
 import { getAllLevels } from '../../levels/level-manager';
+import { renderIcon } from '../icons';
 
 export interface LevelSelectViewOptions {
   onSelectLevel?: (levelId: number) => void;
@@ -55,22 +56,22 @@ export class LevelSelectView {
             <h2 class="level-select-title">CHỌN MÀN CHƠI</h2>
             <div class="level-select-stats">
               <span class="stars-total-badge" aria-label="Tổng số sao đạt được: ${totalStars} trên 90">
-                ⭐ <strong id="total-stars-val">${totalStars}</strong>/90
+                ${renderIcon('star', { size: 16, className: 'icon-gold' })} <strong id="total-stars-val">${totalStars}</strong>/90
               </span>
               <span class="progress-pill">Đã xong: ${completedCount}/30</span>
             </div>
           </div>
           <button type="button" class="btn btn-close-modal" id="btn-close-levels" aria-label="Đóng danh sách màn chơi">
-            ✕
+            ${renderIcon('close', { size: 18 })}
           </button>
         </header>
 
         <div class="level-select-tabs" role="tablist">
           <button type="button" class="tab-btn ${isFreePlay ? '' : 'active'}" id="tab-levels" role="tab" aria-selected="${!isFreePlay}">
-            🏆 Cấp Độ (30 Màn)
+            <span class="btn-icon">${renderIcon('levels', { size: 18 })}</span> <span>Cấp Độ (30 Màn)</span>
           </button>
           <button type="button" class="tab-btn ${isFreePlay ? 'active' : ''}" id="tab-freeplay" role="tab" aria-selected="${isFreePlay}">
-            🎲 Chế Độ Tự Do
+            <span class="btn-icon">${renderIcon('freeplay', { size: 18 })}</span> <span>Chế Độ Tự Do</span>
           </button>
         </div>
 
@@ -82,7 +83,7 @@ export class LevelSelectView {
 
         <footer class="level-select-footer">
           <button type="button" class="btn btn-primary" id="btn-resume-highest">
-            ▶ Tiếp tục màn ${params.currentLevelId ?? 1}
+            <span class="btn-icon">${renderIcon('play', { size: 16 })}</span> <span>Tiếp tục màn ${params.currentLevelId ?? 1}</span>
           </button>
         </footer>
       </div>
@@ -114,7 +115,7 @@ export class LevelSelectView {
             </div>
           `;
         } else {
-          starsHtml = `<div class="card-lock-icon" aria-hidden="true">🔒</div>`;
+          starsHtml = `<div class="card-lock-icon" aria-hidden="true">${renderIcon('lock', { size: 14 })}</div>`;
         }
 
         const sizeLabel = `${lvl.size}×${lvl.size}`;

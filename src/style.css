@@ -600,6 +600,14 @@ body {
   font-size: 0.92rem;
   line-height: 1;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn .game-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .action-btn .btn-text {
@@ -624,9 +632,77 @@ body {
   }
 }
 
+/* ==========================================================================
+   Professional Game Vector SVG Icon System
+   ========================================================================== */
+.game-icon {
+  display: inline-block;
+  vertical-align: middle;
+  stroke: currentColor;
+  fill: none;
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: transform 120ms ease, stroke 150ms ease;
+}
+
 .btn-icon {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.guide-title-icon,
+.tab-icon,
+.inline-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.inline-icon {
+  margin: 0 2px;
+}
+
+.modal-close-icon-btn,
+.btn-close-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-icon-btn .game-icon,
+.btn-close-modal .game-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-menu-btn .game-icon,
+.btn-preview-pic .game-icon,
+.nav-btn .game-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+}
+
+.hud-icon-btn.btn-square .game-icon {
+  width: 20px;
+  height: 20px;
 }
 
 /* ==========================================================================
@@ -2954,8 +3030,13 @@ body[data-animations="false"] *::after {
 }
 
 .menu-brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.6rem;
   line-height: 1;
+  color: var(--wood-gold-light);
+  flex-shrink: 0;
 }
 
 .app-modal-title {
@@ -3044,8 +3125,17 @@ body[data-animations="false"] *::after {
 }
 
 .menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.6rem;
   line-height: 1;
+  color: var(--wood-gold-light);
+  flex-shrink: 0;
+}
+
+.menu-item-btn.btn-primary-gradient .menu-item-icon {
+  color: #ffffff;
 }
 
 .menu-item-content {
@@ -3067,9 +3157,13 @@ body[data-animations="false"] *::after {
 }
 
 .menu-item-arrow {
-  font-size: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   color: #b38b52;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -3106,8 +3200,13 @@ body[data-animations="false"] *::after {
 }
 
 .setting-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.4rem;
   line-height: 1;
+  color: var(--wood-gold-light);
+  flex-shrink: 0;
 }
 
 .setting-title {
@@ -3209,9 +3308,61 @@ body[data-animations="false"] *::after {
 }
 
 .theme-sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.35rem;
   line-height: 1;
   flex-shrink: 0;
+}
+
+/* Swatch Color Circles for Theme Picker */
+.theme-sample.theme-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  display: inline-block;
+  flex-shrink: 0;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-sizing: border-box;
+}
+
+.theme-choice-btn:hover .theme-sample.theme-swatch {
+  transform: scale(1.1);
+}
+
+.theme-choice-btn.active .theme-sample.theme-swatch {
+  box-shadow: 0 0 0 2px var(--accent-amber), 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.theme-sample.wood-light-sample {
+  background: radial-gradient(circle at 35% 35%, #fbe9d0 0%, #d8a068 55%, #9e642e 100%);
+  border-color: #eed6b7;
+}
+
+.theme-sample.wood-dark-sample {
+  background: radial-gradient(circle at 35% 35%, #7a4e32 0%, #3e2213 60%, #1e0e06 100%);
+  border-color: #8c5b3b;
+}
+
+.theme-sample.marble-gold-sample {
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #eef2f6 55%, #c8d3de 100%);
+  border-color: #d4af37;
+  box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4), inset 0 0 0 1px #d4af37;
+}
+
+.theme-sample.tatami-sakura-sample {
+  background: linear-gradient(135deg, #c2d69b 0%, #9cb873 50%, #f472b6 100%);
+  border-color: #fce7f3;
+  box-shadow: 0 2px 5px rgba(244, 114, 182, 0.35);
+}
+
+.theme-sample.neon-cyberpunk-sample {
+  background: radial-gradient(circle at 35% 35%, #1e1b4b 0%, #09090b 70%);
+  border-color: #06b6d4;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6), inset 0 0 4px rgba(236, 72, 153, 0.5);
 }
 
 .theme-info {
@@ -3270,6 +3421,9 @@ body[data-animations="false"] *::after {
 }
 
 .guide-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 6px;

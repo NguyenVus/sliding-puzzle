@@ -10,3 +10,4 @@ export { PictureModalView, type PictureModalViewOptions } from './components/pic
 export { PointerHandler, type SwipeDirection, type PointerHandlerOptions } from './input/pointer-handler';
 export { KeyboardHandler, type KeyboardHandlerOptions } from './input/keyboard-handler';
 export { GameController, type GameStatus, type GameControllerElements } from './game-controller';
+export { renderIcon, type IconName, type IconOptions } from './icons';

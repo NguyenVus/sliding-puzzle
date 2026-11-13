@@ -1,4 +1,5 @@
 import type { LevelConfig } from '../../levels/types';
+import { renderIcon } from '../icons';
 
 export type GameMode = 'campaign' | 'freeplay';
 
@@ -75,20 +76,20 @@ export class HudView {
     this.topContainer.innerHTML = `
       <div class="hud-top-bar">
         <button type="button" id="btn-menu" class="btn hud-icon-btn nav-menu-btn" aria-label="Mở Menu trò chơi">
-          <span class="btn-icon">☰</span>
+          <span class="btn-icon">${renderIcon('menu', { size: 18 })}</span>
           <span class="btn-text">Menu</span>
         </button>
 
         <div class="hud-top-actions">
           <button type="button" id="btn-preview-picture" class="btn hud-icon-btn btn-preview-pic" aria-label="Xem ảnh gốc hoàn chỉnh" style="${isPic ? 'display: inline-flex;' : 'display: none;'}">
-            <span class="btn-icon">👁️</span>
+            <span class="btn-icon">${renderIcon('preview', { size: 18 })}</span>
             <span class="btn-text">Ảnh gốc</span>
           </button>
           <button type="button" id="btn-sound-toggle" class="btn hud-icon-btn btn-square" aria-label="Bật/Tắt âm thanh">
-            <span class="btn-icon" id="btn-sound-icon">${isMuted ? '🔇' : '🔊'}</span>
+            <span class="btn-icon" id="btn-sound-icon">${renderIcon(isMuted ? 'volume-off' : 'volume-on')}<span class="sr-only">${isMuted ? '🔇' : '🔊'}</span></span>
           </button>
           <button type="button" id="btn-settings" class="btn hud-icon-btn btn-square" aria-label="Cài đặt">
-            <span class="btn-icon">⚙️</span>
+            <span class="btn-icon">${renderIcon('settings', { size: 20 })}</span>
           </button>
         </div>
       </div>
@@ -132,11 +133,11 @@ export class HudView {
         <!-- Mode Navigation Bar -->
         <div class="mode-nav-bar">
           <button type="button" id="btn-level-select" class="btn nav-btn" aria-label="Mở danh sách 30 màn chơi">
-            <span class="btn-icon">🏆</span>
+            <span class="btn-icon">${renderIcon('levels', { size: 18 })}</span>
             <span class="btn-text">Chọn màn</span>
           </button>
           <button type="button" id="btn-mode-toggle" class="btn nav-btn" aria-label="Chuyển sang chế độ Tự do">
-            <span class="btn-icon">🎲</span>
+            <span class="btn-icon" id="mode-toggle-icon">${renderIcon('freeplay', { size: 18 })}</span>
             <span class="btn-text" id="mode-toggle-text">Tự do</span>
           </button>
         </div>
@@ -154,23 +155,23 @@ export class HudView {
         <!-- Game Action Buttons -->
         <div class="action-buttons-group">
           <button type="button" id="btn-hint" class="btn action-btn" aria-label="Gợi ý nước đi tiếp theo (phím H)">
-            <span class="btn-icon">💡</span>
+            <span class="btn-icon">${renderIcon('hint', { size: 18 })}</span>
             <span class="btn-text" id="btn-hint-text">Gợi ý</span>
           </button>
           <button type="button" id="btn-undo" class="btn action-btn" aria-label="Hoàn tác bước đi (Z)" disabled>
-            <span class="btn-icon">↩</span>
+            <span class="btn-icon">${renderIcon('undo', { size: 18 })}</span>
             <span class="btn-text">Hoàn tác</span>
           </button>
           <button type="button" id="btn-restart" class="btn action-btn" aria-label="Chơi lại ván hiện tại (R)">
-            <span class="btn-icon">↺</span>
+            <span class="btn-icon">${renderIcon('restart', { size: 18 })}</span>
             <span class="btn-text">Chơi lại</span>
           </button>
           <button type="button" id="btn-solve" class="btn action-btn" aria-label="Tự động giải bàn cờ">
-            <span class="btn-icon" id="btn-solve-icon">🤖</span>
+            <span class="btn-icon" id="btn-solve-icon">${renderIcon('auto-solve', { size: 18 })}</span>
             <span class="btn-text" id="btn-solve-text">Tự giải</span>
           </button>
           <button type="button" id="btn-scramble" class="btn action-btn btn-primary" aria-label="Trộn ván mới">
-            <span class="btn-icon">⚡</span>
+            <span class="btn-icon">${renderIcon('shuffle', { size: 18 })}</span>
             <span class="btn-text" id="btn-scramble-text">Ván mới</span>
           </button>
         </div>
@@ -223,11 +224,13 @@ export class HudView {
   ): void {
     this.currentMode = mode;
     const sizeGroup = this.controlsContainer.querySelector<HTMLElement>('#size-selector-group');
+    const toggleIcon = this.controlsContainer.querySelector('#mode-toggle-icon');
     const toggleText = this.controlsContainer.querySelector('#mode-toggle-text');
     const scrambleText = this.controlsContainer.querySelector('#btn-scramble-text');
 
     if (mode === 'campaign') {
       if (sizeGroup) sizeGroup.style.display = 'none';
+      if (toggleIcon) toggleIcon.innerHTML = renderIcon('freeplay', { size: 18 });
       if (toggleText) toggleText.textContent = 'Tự do';
       if (scrambleText) scrambleText.textContent = 'Ván mới';
 
@@ -236,6 +239,7 @@ export class HudView {
       }
     } else {
       if (sizeGroup) sizeGroup.style.display = 'grid';
+      if (toggleIcon) toggleIcon.innerHTML = renderIcon('levels', { size: 18 });
       if (toggleText) toggleText.textContent = 'Cấp độ';
       if (scrambleText) scrambleText.textContent = 'Trộn mới';
 
@@ -284,12 +288,12 @@ export class HudView {
       if (isSolving) {
         this.solveBtn.classList.add('btn-active-solving');
         this.solveBtn.setAttribute('aria-label', 'Dừng tự động giải');
-        this.solveIconEl.textContent = '⏸';
+        this.solveIconEl.innerHTML = renderIcon('pause', { size: 18 });
         this.solveTextEl.textContent = 'Dừng';
       } else {
         this.solveBtn.classList.remove('btn-active-solving');
         this.solveBtn.setAttribute('aria-label', 'Tự động giải bàn cờ');
-        this.solveIconEl.textContent = '🤖';
+        this.solveIconEl.innerHTML = renderIcon('auto-solve', { size: 18 });
         this.solveTextEl.textContent = 'Tự giải';
       }
     }
@@ -323,7 +327,7 @@ export class HudView {
 
   public setSoundEnabled(enabled: boolean): void {
     if (this.soundIconEl) {
-      this.soundIconEl.textContent = enabled ? '🔊' : '🔇';
+      this.soundIconEl.innerHTML = `${renderIcon(enabled ? 'volume-on' : 'volume-off')}<span class="sr-only">${enabled ? '🔊' : '🔇'}</span>`;
     }
   }
 

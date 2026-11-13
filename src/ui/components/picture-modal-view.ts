@@ -1,4 +1,5 @@
 import type { PictureManager } from '../../picture/picture-manager';
+import type { PresetCategory } from '../../picture/presets';
 
 export interface PictureModalViewOptions {
   pictureManager: PictureManager;
@@ -75,6 +76,7 @@ export class PictureModalView {
   private modalEl: HTMLElement | null = null;
   private isPreviewOnly = false;
   private hasCustomSelected = false;
+  private selectedCategory: 'all' | PresetCategory = 'all';
 
   constructor(container: HTMLElement, options: PictureModalViewOptions) {
     this.container = container;
@@ -119,14 +121,27 @@ export class PictureModalView {
 
     const presetsListHtml = presets
       .map(
-        (p) => `
-        <button type="button" class="preset-choice-card ${!this.hasCustomSelected && p.id === activePresetId ? 'active' : ''}" data-preset-id="${p.id}">
-          <div class="preset-thumb-frame">
-            <img src="${p.thumbnail}" alt="${p.name}" class="preset-thumb-img" />
-          </div>
-          <span class="preset-name">${p.name}</span>
-        </button>
-      `
+        (p) => {
+          const isMatchingCategory =
+            this.selectedCategory === 'all' || p.category === this.selectedCategory;
+          const isSelected = !this.hasCustomSelected && p.id === activePresetId;
+          return `
+            <button type="button"
+              class="preset-choice-card ${isSelected ? 'active' : ''}"
+              data-preset-id="${p.id}"
+              data-category="${p.category}"
+              style="${isMatchingCategory ? 'display: flex;' : 'display: none;'}"
+              aria-label="Chọn tranh ${p.name}">
+              <div class="preset-thumb-frame">
+                <img src="${p.thumbnail}" alt="${p.name}" class="preset-thumb-img" loading="lazy" />
+              </div>
+              <div class="preset-card-details">
+                <span class="preset-category-badge">${p.categoryLabel ?? ''}</span>
+                <span class="preset-name">${p.name}</span>
+              </div>
+            </button>
+          `;
+        }
       )
       .join('');
 
@@ -173,8 +188,36 @@ export class PictureModalView {
 
           <!-- Preset & Upload Selection -->
           <div class="picture-selection-section" ${this.isPreviewOnly ? 'style="display: none;"' : ''}>
-            <h3 class="selection-section-title">Chọn Tranh Mẫu:</h3>
-            <div class="presets-gallery-grid">
+            <div class="selection-section-header">
+              <h3 class="selection-section-title">Chọn Tranh Mẫu (${presets.length} tranh)</h3>
+            </div>
+
+            <!-- Category Filter Bar -->
+            <div class="category-filter-bar" role="tablist" aria-label="Lọc tranh theo chủ đề">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'all' ? 'active' : ''}" data-category="all" role="tab" aria-selected="${this.selectedCategory === 'all'}">
+                <span class="category-tab-icon">✨</span>
+                <span class="category-tab-label">Tất cả</span>
+              </button>
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'animals' ? 'active' : ''}" data-category="animals" role="tab" aria-selected="${this.selectedCategory === 'animals'}">
+                <span class="category-tab-icon">🐾</span>
+                <span class="category-tab-label">Động vật</span>
+              </button>
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'nature' ? 'active' : ''}" data-category="nature" role="tab" aria-selected="${this.selectedCategory === 'nature'}">
+                <span class="category-tab-icon">🌄</span>
+                <span class="category-tab-label">Thiên nhiên</span>
+              </button>
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'space' ? 'active' : ''}" data-category="space" role="tab" aria-selected="${this.selectedCategory === 'space'}">
+                <span class="category-tab-icon">🚀</span>
+                <span class="category-tab-label">Vũ trụ</span>
+              </button>
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'art' ? 'active' : ''}" data-category="art" role="tab" aria-selected="${this.selectedCategory === 'art'}">
+                <span class="category-tab-icon">🎨</span>
+                <span class="category-tab-label">Nghệ thuật</span>
+              </button>
+            </div>
+
+            <!-- Responsive Gallery Grid -->
+            <div class="presets-gallery-grid" id="presets-gallery-grid">
               ${presetsListHtml}
             </div>
 
@@ -248,13 +291,36 @@ export class PictureModalView {
       }
     });
 
+    // Category filter logic
+    const categoryBtns = this.modalEl.querySelectorAll<HTMLButtonElement>('.category-tab-btn');
+    const presetCards = this.modalEl.querySelectorAll<HTMLButtonElement>('.preset-choice-card');
+
+    categoryBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.category as 'all' | PresetCategory;
+        if (!cat) return;
+        this.selectedCategory = cat;
+
+        categoryBtns.forEach((b) => {
+          const isCurrent = b === btn;
+          b.classList.toggle('active', isCurrent);
+          b.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        });
+
+        presetCards.forEach((card) => {
+          const cardCat = card.dataset.category;
+          const isVisible = cat === 'all' || cardCat === cat;
+          card.style.display = isVisible ? 'flex' : 'none';
+        });
+      });
+    });
+
     // Preset selection
-    const presetButtons = this.modalEl.querySelectorAll<HTMLButtonElement>('.preset-choice-card');
-    presetButtons.forEach((btn) => {
+    presetCards.forEach((btn) => {
       btn.addEventListener('click', () => {
         const presetId = btn.dataset.presetId;
         if (presetId) {
-          presetButtons.forEach((b) => b.classList.remove('active'));
+          presetCards.forEach((b) => b.classList.remove('active'));
           btn.classList.add('active');
           this.hasCustomSelected = false;
           this.options.onSelectPreset(presetId);
@@ -273,7 +339,7 @@ export class PictureModalView {
       if (file) {
         try {
           const optimizedDataUrl = await processCustomImageFile(file);
-          presetButtons.forEach((b) => b.classList.remove('active'));
+          presetCards.forEach((b) => b.classList.remove('active'));
           this.hasCustomSelected = true;
           this.options.onUploadCustom(optimizedDataUrl);
           const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');

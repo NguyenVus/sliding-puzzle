@@ -176,6 +176,59 @@ describe('UI Modals Suite', () => {
       pictureModal.close();
     });
 
+    it('filters presets by category tabs and updates selection', () => {
+      const onSelectPreset = vi.fn();
+      const onUploadCustom = vi.fn();
+
+      const pictureModal = new PictureModalView(container, {
+        pictureManager,
+        gridSize: 3,
+        onSelectPreset,
+        onUploadCustom,
+      });
+
+      pictureModal.showSelector(3);
+      expect(pictureModal.isOpen()).toBe(true);
+
+      // Verify all 10 preset cards are rendered
+      const allCards = container.querySelectorAll<HTMLButtonElement>('.preset-choice-card');
+      expect(allCards.length).toBe(10);
+
+      // Verify category filter tabs
+      const filterBar = container.querySelector('.category-filter-bar');
+      expect(filterBar).not.toBeNull();
+      const animalsTab = container.querySelector<HTMLButtonElement>('[data-category="animals"]');
+      const natureTab = container.querySelector<HTMLButtonElement>('[data-category="nature"]');
+      const allTab = container.querySelector<HTMLButtonElement>('[data-category="all"]');
+
+      expect(animalsTab).not.toBeNull();
+      expect(natureTab).not.toBeNull();
+      expect(allTab).not.toBeNull();
+
+      // Click "Động vật" tab
+      animalsTab?.click();
+      expect(animalsTab?.classList.contains('active')).toBe(true);
+      expect(animalsTab?.getAttribute('aria-selected')).toBe('true');
+
+      // Verify only animal cards are visible
+      const visibleAnimalCards = Array.from(allCards).filter((c) => c.style.display !== 'none');
+      expect(visibleAnimalCards.length).toBe(3);
+      const catCard = container.querySelector<HTMLButtonElement>('[data-preset-id="preset-cat"]');
+      expect(catCard?.style.display).toBe('flex');
+
+      // Click cat card to select it
+      catCard?.click();
+      expect(onSelectPreset).toHaveBeenCalledWith('preset-cat');
+      expect(catCard?.classList.contains('active')).toBe(true);
+
+      // Click "Tất cả" tab to reset filter
+      allTab?.click();
+      const visibleAllCards = Array.from(allCards).filter((c) => c.style.display !== 'none');
+      expect(visibleAllCards.length).toBe(10);
+
+      pictureModal.close();
+    });
+
     it('preserves custom uploaded image and triggers onApply when clicking done', () => {
       const onSelectPreset = vi.fn();
       const onUploadCustom = vi.fn();

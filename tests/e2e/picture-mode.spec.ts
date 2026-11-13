@@ -136,4 +136,56 @@ test.describe('Picture Puzzle Mode E2E', () => {
     const bgStyle = await firstTile.evaluate((el) => el.style.backgroundImage);
     expect(bgStyle).toContain('data:image/svg+xml');
   });
+
+  test('filters presets by category and selects diverse themes (Animals, Space, Art)', async ({ page }) => {
+    // Open Main Menu -> Picture Mode
+    await page.locator('#btn-menu').click();
+    await page.locator('#menu-btn-picture').click();
+
+    const picModal = page.locator('.picture-modal-card');
+    await expect(picModal).toBeVisible();
+
+    // Verify all 10 preset cards are present
+    const presetCards = page.locator('.preset-choice-card');
+    await expect(presetCards).toHaveCount(10);
+
+    // 1. Filter by Animals
+    const animalsTab = page.locator('.category-tab-btn[data-category="animals"]');
+    await expect(animalsTab).toBeVisible();
+    await animalsTab.click();
+    await expect(animalsTab).toHaveClass(/active/);
+
+    const catCard = page.locator('[data-preset-id="preset-cat"]');
+    const spaceCard = page.locator('[data-preset-id="preset-astronaut"]');
+    await expect(catCard).toBeVisible();
+    await expect(spaceCard).not.toBeVisible();
+
+    // 2. Filter by Space
+    const spaceTab = page.locator('.category-tab-btn[data-category="space"]');
+    await spaceTab.click();
+    await expect(spaceCard).toBeVisible();
+    await expect(catCard).not.toBeVisible();
+
+    // Select Astronaut preset
+    await spaceCard.click();
+    await expect(spaceCard).toHaveClass(/active/);
+
+    // 3. Filter by Art
+    const artTab = page.locator('.category-tab-btn[data-category="art"]');
+    await artTab.click();
+    const starryCard = page.locator('[data-preset-id="preset-starry"]');
+    await expect(starryCard).toBeVisible();
+
+    // Select Starry Night preset
+    await starryCard.click();
+    await expect(starryCard).toHaveClass(/active/);
+
+    // Click Apply
+    await page.locator('#picture-btn-done').click();
+    await expect(picModal).not.toBeVisible();
+
+    // Verify board is in picture mode with active Starry Night preset
+    const firstTile = page.locator('.wood-tile.is-picture-tile').first();
+    await expect(firstTile).toBeVisible();
+  });
 });

@@ -338,12 +338,27 @@ async function run() {
     capturedCount++;
     console.log(`📸 Saved screenshot: ${path.basename(darkWalnutPath)}`);
 
-    // 6e. Switch to Picture Puzzle Mode (Rừng thông preset)
+    // 6e. Picture Puzzle Mode Selection Modal (All Categories)
     await p5Page.click('#btn-menu');
     await p5Page.waitForSelector('.main-menu-card');
     await p5Page.click('#menu-btn-picture');
     await p5Page.waitForSelector('.picture-modal-card');
-    await p5Page.click('[data-preset-id="preset-pine"]');
+    await p5Page.waitForTimeout(200);
+    const picModalAllPath = path.join(screenshotsDir, 'picture_modal_selector_all.png');
+    await p5Page.screenshot({ path: picModalAllPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(picModalAllPath)}`);
+
+    // 6f. Picture Puzzle Mode Selection Modal (Animals Category Filtered)
+    await p5Page.click('.category-tab-btn[data-category="animals"]');
+    await p5Page.waitForTimeout(200);
+    const picModalAnimalsPath = path.join(screenshotsDir, 'picture_modal_selector_animals.png');
+    await p5Page.screenshot({ path: picModalAnimalsPath });
+    capturedCount++;
+    console.log(`📸 Saved screenshot: ${path.basename(picModalAnimalsPath)}`);
+
+    // 6g. Select Cute Ginger Cat preset & play
+    await p5Page.click('[data-preset-id="preset-cat"]');
     await p5Page.click('#picture-btn-done');
     await p5Page.waitForTimeout(300);
     const pictureModePath = path.join(screenshotsDir, 'picture_mode_gameplay.png');
@@ -351,7 +366,7 @@ async function run() {
     capturedCount++;
     console.log(`📸 Saved screenshot: ${path.basename(pictureModePath)}`);
 
-    // 6f. Picture Mode "Xem ảnh gốc" Preview
+    // 6h. Picture Mode "Xem ảnh gốc" Preview
     await p5Page.click('#btn-preview-picture');
     await p5Page.waitForSelector('.picture-modal-card');
     await p5Page.waitForTimeout(200);

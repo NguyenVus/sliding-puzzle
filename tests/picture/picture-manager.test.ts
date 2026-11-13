@@ -16,7 +16,50 @@ describe('PictureManager', () => {
     expect(manager.isEnabled()).toBe(false);
     expect(manager.isNumbersVisible()).toBe(true);
     expect(manager.getActivePresetId()).toBe('preset-fuji');
-    expect(manager.getPresets().length).toBeGreaterThanOrEqual(3);
+    expect(manager.getPresets().length).toBe(10);
+  });
+
+  it('provides 10 diverse presets across animals, space, nature, and art categories', () => {
+    const presets = manager.getPresets();
+    expect(presets.length).toBe(10);
+
+    const categories = new Set(presets.map((p) => p.category));
+    expect(categories.has('animals')).toBe(true);
+    expect(categories.has('nature')).toBe(true);
+    expect(categories.has('space')).toBe(true);
+    expect(categories.has('art')).toBe(true);
+
+    const expectedIds = [
+      'preset-fuji',
+      'preset-cat',
+      'preset-corgi',
+      'preset-panda',
+      'preset-astronaut',
+      'preset-cosmic',
+      'preset-aurora',
+      'preset-pine',
+      'preset-wave',
+      'preset-starry',
+    ];
+
+    for (const expectedId of expectedIds) {
+      const preset = presets.find((p) => p.id === expectedId);
+      expect(preset).toBeDefined();
+      expect(preset?.name.length).toBeGreaterThan(0);
+      expect(preset?.categoryLabel).toBeDefined();
+      expect(preset?.thumbnail).toContain('data:image/svg+xml');
+      expect(preset?.url).toContain('data:image/svg+xml');
+    }
+  });
+
+  it('selects newly added presets such as cat and starry night', () => {
+    manager.selectPreset('preset-cat');
+    expect(manager.getActivePresetId()).toBe('preset-cat');
+    expect(manager.getActivePictureUrl()).toContain('data:image/svg+xml');
+
+    manager.selectPreset('preset-starry');
+    expect(manager.getActivePresetId()).toBe('preset-starry');
+    expect(manager.getActivePictureUrl()).toContain('data:image/svg+xml');
   });
 
   it('toggles picture mode on and off and persists to storage', () => {

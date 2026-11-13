@@ -144,36 +144,84 @@ export class GameController {
         soundEnabled: this.soundSynthesizer.isSoundEnabled(),
         isPictureMode: this.pictureManager.isEnabled(),
         onUndo: () => this.undo(),
-        onRestart: () => this.restartGame(),
-        onScramble: () => this.startNewGame(),
+        onRestart: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.restartGame();
+        },
+        onScramble: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.startNewGame();
+        },
         onHint: () => {
+          this.soundSynthesizer.playButtonClick();
           void this.requestHint();
         },
         onAutoSolve: () => {
+          this.soundSynthesizer.playButtonClick();
           void this.toggleAutoSolve();
         },
-        onSizeChange: (size) => this.changeSize(size),
-        onOpenLevelSelect: () => this.openLevelSelect(),
-        onSwitchMode: (nextMode) => this.setMode(nextMode),
-        onOpenMenu: () => this.openMainMenu(),
+        onSizeChange: (size) => {
+          this.soundSynthesizer.playButtonClick();
+          this.changeSize(size);
+        },
+        onOpenLevelSelect: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.openLevelSelect();
+        },
+        onSwitchMode: (nextMode) => {
+          this.soundSynthesizer.playButtonClick();
+          this.setMode(nextMode);
+        },
+        onOpenMenu: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.openMainMenu();
+        },
         onToggleSound: () => this.toggleSound(),
-        onOpenSettings: () => this.openSettings(),
-        onPreviewPicture: () => this.openPicturePreview(),
+        onOpenSettings: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.openSettings();
+        },
+        onPreviewPicture: () => {
+          this.soundSynthesizer.playButtonClick();
+          this.openPicturePreview();
+        },
       }
     );
 
     this.modalView = new ModalView(this.elements.root, {
-      onRestart: () => this.restartGame(),
-      onNewGame: () => this.startNewGame(),
-      onNextLevel: (nextLevelId) => this.loadLevel(nextLevelId),
-      onOpenLevelSelect: () => this.openLevelSelect(),
-      onClose: () => this.modalView.close(),
+      onRestart: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.restartGame();
+      },
+      onNewGame: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.startNewGame();
+      },
+      onNextLevel: (nextLevelId) => {
+        this.soundSynthesizer.playButtonClick();
+        this.loadLevel(nextLevelId);
+      },
+      onOpenLevelSelect: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.openLevelSelect();
+      },
+      onClose: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.modalView.close();
+      },
     });
 
     this.levelSelectView = new LevelSelectView(this.elements.root, {
-      onSelectLevel: (lvlId) => this.loadLevel(lvlId),
-      onSwitchToFreePlay: () => this.startFreePlay(this.size),
+      onSelectLevel: (lvlId) => {
+        this.soundSynthesizer.playButtonClick();
+        this.loadLevel(lvlId);
+      },
+      onSwitchToFreePlay: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.startFreePlay(this.size);
+      },
       onClose: () => {
+        this.soundSynthesizer.playButtonClick();
         this.levelSelectView.close();
         if (this.status === 'playing') {
           this.startTimer();
@@ -182,12 +230,28 @@ export class GameController {
     });
 
     this.menuModalView = new MenuModalView(this.elements.root, {
-      onSelectCampaign: () => this.openLevelSelect(),
-      onSelectFreePlay: () => this.startFreePlay(this.size),
-      onSelectPictureMode: () => this.openPictureSelector(),
-      onOpenSettings: () => this.openSettings(),
-      onOpenHowToPlay: () => this.openHowToPlay(),
+      onSelectCampaign: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.openLevelSelect();
+      },
+      onSelectFreePlay: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.startFreePlay(this.size);
+      },
+      onSelectPictureMode: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.openPictureSelector();
+      },
+      onOpenSettings: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.openSettings();
+      },
+      onOpenHowToPlay: () => {
+        this.soundSynthesizer.playButtonClick();
+        this.openHowToPlay();
+      },
       onClose: () => {
+        this.soundSynthesizer.playButtonClick();
         if (this.status === 'playing') this.startTimer();
       },
     });
@@ -720,6 +784,7 @@ export class GameController {
     this.boardView.render(this.board, { animate: true });
     this.hudView.setMoves(this.moves);
     this.hudView.setCanUndo(this.history.length > 0);
+    this.soundSynthesizer.playUndo();
 
     return true;
   }

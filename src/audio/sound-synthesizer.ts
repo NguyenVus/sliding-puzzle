@@ -136,9 +136,16 @@ export class SoundSynthesizer {
   }
 
   /**
-   * Synthesizes an organic wood click/tap sound.
-   * Characteristics: Short attack (~2ms), natural wood resonance (500-800Hz),
-   * quick decay (~40ms), and subtle random pitch fluctuation (±8%) to prevent fatigue.
+   * Synthesizes an organic, warm wooden "thock" slide sound.
+   *
+   * Acoustic parameters:
+   * - Attack / Transient: Soft sine pitch glide from ~650Hz down to ~280Hz in 15ms
+   *   for tactile mechanical wood contact without sharp/glassy frequencies.
+   * - Body / Resonance: Hollow woody triangle oscillator in the 220Hz-320Hz range
+   *   (centered around ~270Hz) with gentle lowpass filtering and crisp 45ms-60ms decay
+   *   for an ASMR tactile snap.
+   * - Pitch Variation: Subtle +/- 4% random deviation between consecutive slides
+   *   to feel natural, dynamic, and non-fatiguing.
    */
   public playTileSlide(): void {
     if (!this.soundEnabled || this.isDestroyed) return;
@@ -149,49 +156,78 @@ export class SoundSynthesizer {
     }
 
     const t = Math.max(ctx.currentTime, 0) + 0.002;
-    // Micro pitch variation: +/- 8%
-    const variation = 1 + (Math.random() - 0.5) * 0.16;
-    const baseFreq = 540 * variation;
+    // Micro pitch variation: +/- 4% (0.96 to 1.04)
+    const variation = 1 + (Math.random() - 0.5) * 0.08;
 
-    // 1. Resonant wood body oscillator (triangle for woody hollow timbre)
-    const osc = ctx.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(baseFreq * 1.5, t);
-    // Rapid pitch drop mimicking a physical wooden impact strike
-    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, t + 0.045);
+    // Gentle lowpass filter to remove harsh highs and accentuate warm wood resonance
+    let outputNode: AudioNode = this.masterGain;
+    if (typeof ctx.createBiquadFilter === 'function') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(950 * variation, t);
+      filter.Q.setValueAtTime(1.4, t);
+      filter.connect(this.masterGain);
+      outputNode = filter;
+    }
 
-    const oscGain = ctx.createGain();
-    oscGain.gain.setValueAtTime(0.001, t);
-    oscGain.gain.linearRampToValueAtTime(0.8, t + 0.002);
-    oscGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.048);
+    // 1. Attack / Transient: sine glide 650Hz -> 280Hz in 15ms
+    const attackStartFreq = 650 * variation;
+    const attackEndFreq = 280 * variation;
 
-    // 2. High snap transient (filtered square for sharp surface contact)
-    const snapOsc = ctx.createOscillator();
-    snapOsc.type = 'sine';
-    snapOsc.frequency.setValueAtTime(1400 * variation, t);
-    snapOsc.frequency.exponentialRampToValueAtTime(300, t + 0.015);
+    const attackOsc = ctx.createOscillator();
+    attackOsc.type = 'sine';
+    attackOsc.frequency.setValueAtTime(attackStartFreq, t);
+    attackOsc.frequency.exponentialRampToValueAtTime(attackEndFreq, t + 0.015);
 
-    const snapGain = ctx.createGain();
-    snapGain.gain.setValueAtTime(0.5, t);
-    snapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+    const attackGain = ctx.createGain();
+    attackGain.gain.setValueAtTime(0.0001, t);
+    attackGain.gain.linearRampToValueAtTime(0.45, t + 0.002);
+    attackGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
 
-    // Connect nodes
-    osc.connect(oscGain);
-    snapOsc.connect(snapGain);
+    attackOsc.connect(attackGain);
+    attackGain.connect(outputNode);
+    attackOsc.start(t);
+    attackOsc.stop(t + 0.022);
 
-    oscGain.connect(this.masterGain);
-    snapGain.connect(this.masterGain);
+    // 2. Body / Resonance: warm hollow wood body (triangle wave at ~270Hz in 220Hz-320Hz range)
+    const bodyBaseFreq = 270 * variation;
+    const bodyOsc = ctx.createOscillator();
+    bodyOsc.type = 'triangle';
+    bodyOsc.frequency.setValueAtTime(bodyBaseFreq, t);
+    bodyOsc.frequency.exponentialRampToValueAtTime(bodyBaseFreq * 0.85, t + 0.05);
 
-    osc.start(t);
-    snapOsc.start(t);
+    const bodyGain = ctx.createGain();
+    bodyGain.gain.setValueAtTime(0.0001, t);
+    bodyGain.gain.linearRampToValueAtTime(0.65, t + 0.003);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
 
-    osc.stop(t + 0.05);
-    snapOsc.stop(t + 0.02);
+    bodyOsc.connect(bodyGain);
+    bodyGain.connect(outputNode);
+    bodyOsc.start(t);
+    bodyOsc.stop(t + 0.058);
   }
 
   /**
-   * Synthesizes a bright, inspiring victory fanfare/chime arpeggio.
-   * Plays a sequence of harmonic chime notes with shimmering marimba/bell decay.
+   * Alias for playTileSlide() conforming to task specifications.
+   */
+  public playSlide(): void {
+    this.playTileSlide();
+  }
+
+  /**
+   * Alias for playTileSlide() conforming to task specifications.
+   */
+  public playMove(): void {
+    this.playTileSlide();
+  }
+
+  /**
+   * Synthesizes a bright, luxurious, and uplifting victory chime arpeggio.
+   *
+   * Harmonic structure:
+   * Major 9th chime sequence: C5 -> E5 -> G5 -> B5 -> D6 -> C6 (resolution).
+   * Warm marimba / celesta / music box timbre with soft attack, crystalline overtones,
+   * and a prolonged resonant decay for satisfying sense of achievement.
    */
   public playVictory(): void {
     if (!this.soundEnabled || this.isDestroyed) return;
@@ -203,51 +239,173 @@ export class SoundSynthesizer {
 
     const t = Math.max(ctx.currentTime, 0) + 0.002;
 
-    // Victory arpeggio: G4 -> C5 -> E5 -> G5 -> C6 (Joyful major triad fanfare)
+    // Celesta / music box filter for crystal warmth
+    let outputNode: AudioNode = this.masterGain;
+    if (typeof ctx.createBiquadFilter === 'function') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(3600, t);
+      filter.Q.setValueAtTime(0.7, t);
+      filter.connect(this.masterGain);
+      outputNode = filter;
+    }
+
+    // Victory Major 9th arpeggio resolving to triumphant C6:
+    // C5 (523.25Hz), E5 (659.25Hz), G5 (783.99Hz), B5 (987.77Hz), D6 (1174.66Hz), C6 (1046.50Hz)
     const notes = [
-      { freq: 392.0, time: 0.0, duration: 0.35, gain: 0.35 }, // G4
-      { freq: 523.25, time: 0.09, duration: 0.35, gain: 0.4 }, // C5
-      { freq: 659.25, time: 0.18, duration: 0.35, gain: 0.45 }, // E5
-      { freq: 783.99, time: 0.27, duration: 0.5, gain: 0.5 }, // G5
-      { freq: 1046.5, time: 0.38, duration: 1.2, gain: 0.65 }, // C6 (Final bell)
-      { freq: 1318.5, time: 0.42, duration: 1.1, gain: 0.4 }, // E6 harmony
+      { freq: 523.25, time: 0.0, duration: 0.45, gain: 0.32 }, // C5
+      { freq: 659.25, time: 0.08, duration: 0.45, gain: 0.35 }, // E5
+      { freq: 783.99, time: 0.16, duration: 0.5, gain: 0.38 }, // G5
+      { freq: 987.77, time: 0.24, duration: 0.55, gain: 0.42 }, // B5
+      { freq: 1174.66, time: 0.32, duration: 0.65, gain: 0.48 }, // D6
+      { freq: 1046.5, time: 0.44, duration: 1.4, gain: 0.65 }, // C6 (Majestic resolution bell)
     ];
 
     for (const note of notes) {
       const noteStart = t + note.time;
 
-      // Primary sine tone for crystal purity
+      // 1. Fundamental warm bell/celesta sine wave
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(note.freq, noteStart);
 
-      // Subtle overtone (bell/chime shimmer)
+      // 2. Harmonic chime overtone (marimba/celesta modal overtone ~2.76x)
       const overtone = ctx.createOscillator();
       overtone.type = 'sine';
-      overtone.frequency.setValueAtTime(note.freq * 2.76, noteStart);
+      overtone.frequency.setValueAtTime(note.freq * 2.756, noteStart);
 
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.0001, noteStart);
-      gain.gain.linearRampToValueAtTime(note.gain, noteStart + 0.012);
+      gain.gain.linearRampToValueAtTime(note.gain, noteStart + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + note.duration);
 
       const overGain = ctx.createGain();
       overGain.gain.setValueAtTime(0.0001, noteStart);
-      overGain.gain.linearRampToValueAtTime(note.gain * 0.25, noteStart + 0.008);
-      overGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + note.duration * 0.6);
+      overGain.gain.linearRampToValueAtTime(note.gain * 0.22, noteStart + 0.006);
+      overGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + note.duration * 0.45);
 
       osc.connect(gain);
       overtone.connect(overGain);
 
-      gain.connect(this.masterGain);
-      overGain.connect(this.masterGain);
+      gain.connect(outputNode);
+      overGain.connect(outputNode);
 
       osc.start(noteStart);
       overtone.start(noteStart);
 
       osc.stop(noteStart + note.duration);
-      overtone.stop(noteStart + note.duration * 0.6);
+      overtone.stop(noteStart + note.duration * 0.45);
     }
+  }
+
+  /**
+   * Synthesizes a subtle, pleasant soft wooden tick for button clicks and interactions.
+   */
+  public playButtonClick(): void {
+    if (!this.soundEnabled || this.isDestroyed) return;
+    const ctx = this.getAudioContext();
+    if (!ctx || !this.masterGain) return;
+    if (ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+
+    const t = Math.max(ctx.currentTime, 0) + 0.002;
+
+    let outputNode: AudioNode = this.masterGain;
+    if (typeof ctx.createBiquadFilter === 'function') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1400, t);
+      filter.connect(this.masterGain);
+      outputNode = filter;
+    }
+
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(720, t);
+    osc.frequency.exponentialRampToValueAtTime(360, t + 0.012);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.25, t + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.024);
+
+    osc.connect(gain);
+    gain.connect(outputNode);
+
+    osc.start(t);
+    osc.stop(t + 0.025);
+  }
+
+  /**
+   * Alias for playButtonClick()
+   */
+  public playClick(): void {
+    this.playButtonClick();
+  }
+
+  /**
+   * Alias for playButtonClick()
+   */
+  public playButtonTick(): void {
+    this.playButtonClick();
+  }
+
+  /**
+   * Synthesizes an elegant, ethereal upward wooden swoosh/tone for undo actions.
+   */
+  public playUndo(): void {
+    if (!this.soundEnabled || this.isDestroyed) return;
+    const ctx = this.getAudioContext();
+    if (!ctx || !this.masterGain) return;
+    if (ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+
+    const t = Math.max(ctx.currentTime, 0) + 0.002;
+
+    let outputNode: AudioNode = this.masterGain;
+    if (typeof ctx.createBiquadFilter === 'function') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1800, t);
+      filter.connect(this.masterGain);
+      outputNode = filter;
+    }
+
+    // Graceful ascending tone: G4 (392Hz) -> D5 (587.33Hz) in 35ms
+    const osc1 = ctx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(392, t);
+    osc1.frequency.exponentialRampToValueAtTime(587.33, t + 0.035);
+
+    const gain1 = ctx.createGain();
+    gain1.gain.setValueAtTime(0.0001, t);
+    gain1.gain.linearRampToValueAtTime(0.32, t + 0.004);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+
+    // Subtle harmonic shimmer for lightness
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(784, t);
+    osc2.frequency.exponentialRampToValueAtTime(1174.66, t + 0.035);
+
+    const gain2 = ctx.createGain();
+    gain2.gain.setValueAtTime(0.0001, t);
+    gain2.gain.linearRampToValueAtTime(0.12, t + 0.004);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+
+    gain1.connect(outputNode);
+    gain2.connect(outputNode);
+
+    osc1.start(t);
+    osc2.start(t);
+
+    osc1.stop(t + 0.08);
+    osc2.stop(t + 0.065);
   }
 
   /**

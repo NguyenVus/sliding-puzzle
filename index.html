@@ -1,13 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#d9b780" />
+    <meta
+      name="description"
+      content="Trò chơi trượt ô Sliding Puzzle phong cách gỗ sáng trang nhã, mượt mà trên mọi thiết bị."
+    />
+    <title>Sliding Puzzle - Gỗ Sáng</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sliding-puzzle</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" class="game-app">
+      <header class="hud-top" id="hud-top"></header>
+      <main class="board-area" id="board-area"></main>
+      <footer class="hud-bottom" id="hud-bottom"></footer>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

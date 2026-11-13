@@ -220,11 +220,46 @@ describe('UI Modals Suite', () => {
       catCard?.click();
       expect(onSelectPreset).toHaveBeenCalledWith('preset-cat');
       expect(catCard?.classList.contains('active')).toBe(true);
+      expect(catCard?.getAttribute('aria-pressed')).toBe('true');
 
       // Click "Tất cả" tab to reset filter
       allTab?.click();
       const visibleAllCards = Array.from(allCards).filter((c) => c.style.display !== 'none');
       expect(visibleAllCards.length).toBe(10);
+
+      // Verify category tabs Arrow key navigation
+      animalsTab?.focus();
+      animalsTab?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      expect(natureTab?.classList.contains('active')).toBe(true);
+
+      pictureModal.close();
+    });
+
+    it('handles keyboard navigation and shows indicator for custom image', () => {
+      const onSelectPreset = vi.fn();
+      const onUploadCustom = vi.fn();
+
+      const pictureModal = new PictureModalView(container, {
+        pictureManager,
+        gridSize: 3,
+        onSelectPreset,
+        onUploadCustom,
+      });
+
+      pictureModal.showSelector(3);
+      const uploadLabel = container.querySelector<HTMLLabelElement>('.btn-upload-image');
+      const fileInput = container.querySelector<HTMLInputElement>('#custom-image-file-input');
+      expect(uploadLabel).not.toBeNull();
+      expect(fileInput).not.toBeNull();
+
+      let clickTriggered = false;
+      fileInput?.addEventListener('click', () => {
+        clickTriggered = true;
+      });
+
+      // Press Space on upload label to open file picker
+      uploadLabel?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      expect(clickTriggered).toBe(true);
 
       pictureModal.close();
     });

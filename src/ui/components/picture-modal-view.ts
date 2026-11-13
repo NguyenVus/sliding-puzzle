@@ -100,6 +100,7 @@ export class PictureModalView {
    */
   public showSelector(gridSize?: number): void {
     this.isPreviewOnly = false;
+    this.selectedCategory = 'all';
     this.render(gridSize);
   }
 
@@ -112,6 +113,14 @@ export class PictureModalView {
     const activePresetId = pm.getActivePresetId();
     this.hasCustomSelected = pm.hasCustomImage();
     const size = customGridSize ?? this.options.gridSize;
+
+    const categoryCounts: Record<'all' | PresetCategory, number> = {
+      all: presets.length,
+      animals: presets.filter((p) => p.category === 'animals').length,
+      nature: presets.filter((p) => p.category === 'nature').length,
+      space: presets.filter((p) => p.category === 'space').length,
+      art: presets.filter((p) => p.category === 'art').length,
+    };
 
     this.modalEl = document.createElement('div');
     this.modalEl.className = 'app-modal-backdrop picture-modal-backdrop';
@@ -131,7 +140,8 @@ export class PictureModalView {
               data-preset-id="${p.id}"
               data-category="${p.category}"
               style="${isMatchingCategory ? 'display: flex;' : 'display: none;'}"
-              aria-label="Chọn tranh ${p.name}">
+              aria-label="Chọn tranh ${p.name}"
+              aria-pressed="${isSelected ? 'true' : 'false'}">
               <div class="preset-thumb-frame">
                 <img src="${p.thumbnail}" alt="${p.name}" class="preset-thumb-img" loading="lazy" />
               </div>
@@ -189,41 +199,51 @@ export class PictureModalView {
           <!-- Preset & Upload Selection -->
           <div class="picture-selection-section" ${this.isPreviewOnly ? 'style="display: none;"' : ''}>
             <div class="selection-section-header">
-              <h3 class="selection-section-title">Chọn Tranh Mẫu (${presets.length} tranh)</h3>
+              <h3 class="selection-section-title" id="selection-section-title">Chọn Tranh Mẫu (${presets.length} tranh)</h3>
             </div>
 
             <!-- Category Filter Bar -->
             <div class="category-filter-bar" role="tablist" aria-label="Lọc tranh theo chủ đề">
-              <button type="button" class="category-tab-btn ${this.selectedCategory === 'all' ? 'active' : ''}" data-category="all" role="tab" aria-selected="${this.selectedCategory === 'all'}">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'all' ? 'active' : ''}" data-category="all" role="tab" aria-selected="${this.selectedCategory === 'all'}" id="cat-tab-all" aria-controls="presets-gallery-grid">
                 <span class="category-tab-icon">✨</span>
                 <span class="category-tab-label">Tất cả</span>
+                <span class="category-tab-count">${categoryCounts.all}</span>
               </button>
-              <button type="button" class="category-tab-btn ${this.selectedCategory === 'animals' ? 'active' : ''}" data-category="animals" role="tab" aria-selected="${this.selectedCategory === 'animals'}">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'animals' ? 'active' : ''}" data-category="animals" role="tab" aria-selected="${this.selectedCategory === 'animals'}" id="cat-tab-animals" aria-controls="presets-gallery-grid">
                 <span class="category-tab-icon">🐾</span>
                 <span class="category-tab-label">Động vật</span>
+                <span class="category-tab-count">${categoryCounts.animals}</span>
               </button>
-              <button type="button" class="category-tab-btn ${this.selectedCategory === 'nature' ? 'active' : ''}" data-category="nature" role="tab" aria-selected="${this.selectedCategory === 'nature'}">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'nature' ? 'active' : ''}" data-category="nature" role="tab" aria-selected="${this.selectedCategory === 'nature'}" id="cat-tab-nature" aria-controls="presets-gallery-grid">
                 <span class="category-tab-icon">🌄</span>
                 <span class="category-tab-label">Thiên nhiên</span>
+                <span class="category-tab-count">${categoryCounts.nature}</span>
               </button>
-              <button type="button" class="category-tab-btn ${this.selectedCategory === 'space' ? 'active' : ''}" data-category="space" role="tab" aria-selected="${this.selectedCategory === 'space'}">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'space' ? 'active' : ''}" data-category="space" role="tab" aria-selected="${this.selectedCategory === 'space'}" id="cat-tab-space" aria-controls="presets-gallery-grid">
                 <span class="category-tab-icon">🚀</span>
                 <span class="category-tab-label">Vũ trụ</span>
+                <span class="category-tab-count">${categoryCounts.space}</span>
               </button>
-              <button type="button" class="category-tab-btn ${this.selectedCategory === 'art' ? 'active' : ''}" data-category="art" role="tab" aria-selected="${this.selectedCategory === 'art'}">
+              <button type="button" class="category-tab-btn ${this.selectedCategory === 'art' ? 'active' : ''}" data-category="art" role="tab" aria-selected="${this.selectedCategory === 'art'}" id="cat-tab-art" aria-controls="presets-gallery-grid">
                 <span class="category-tab-icon">🎨</span>
                 <span class="category-tab-label">Nghệ thuật</span>
+                <span class="category-tab-count">${categoryCounts.art}</span>
               </button>
             </div>
 
             <!-- Responsive Gallery Grid -->
-            <div class="presets-gallery-grid" id="presets-gallery-grid">
+            <div class="presets-gallery-grid" id="presets-gallery-grid" role="region" aria-label="Danh sách tranh mẫu">
               ${presetsListHtml}
             </div>
 
-            <div class="custom-upload-box">
+            <div class="custom-upload-box ${this.hasCustomSelected ? 'custom-active' : ''}">
+              <div id="custom-active-badge" class="custom-active-indicator" style="${this.hasCustomSelected ? 'display: flex;' : 'display: none;'}">
+                <span class="custom-active-dot">●</span>
+                <span>Đang chọn: Ảnh tải lên từ thiết bị</span>
+              </div>
+              <div id="custom-upload-error" class="custom-upload-error-msg" role="alert" style="display: none;"></div>
               <input type="file" id="custom-image-file-input" accept="image/png, image/jpeg, image/webp, image/svg+xml" class="visually-hidden" />
-              <label for="custom-image-file-input" class="btn btn-upload-image" tabindex="0" role="button">
+              <label for="custom-image-file-input" class="btn btn-upload-image" tabindex="0" role="button" aria-label="Tải ảnh từ thiết bị của bạn">
                 <span class="btn-icon">📁</span>
                 <span>Tải ảnh từ thiết bị của bạn...</span>
               </label>
@@ -294,8 +314,12 @@ export class PictureModalView {
     // Category filter logic
     const categoryBtns = this.modalEl.querySelectorAll<HTMLButtonElement>('.category-tab-btn');
     const presetCards = this.modalEl.querySelectorAll<HTMLButtonElement>('.preset-choice-card');
+    const uploadBox = this.modalEl.querySelector<HTMLElement>('.custom-upload-box');
+    const customBadge = this.modalEl.querySelector<HTMLElement>('#custom-active-badge');
+    const customError = this.modalEl.querySelector<HTMLElement>('#custom-upload-error');
+    const sectionTitle = this.modalEl.querySelector<HTMLElement>('#selection-section-title');
 
-    categoryBtns.forEach((btn) => {
+    categoryBtns.forEach((btn, idx) => {
       btn.addEventListener('click', () => {
         const cat = btn.dataset.category as 'all' | PresetCategory;
         if (!cat) return;
@@ -312,6 +336,36 @@ export class PictureModalView {
           const isVisible = cat === 'all' || cardCat === cat;
           card.style.display = isVisible ? 'flex' : 'none';
         });
+
+        if (sectionTitle) {
+          const count = categoryCounts[cat];
+          const label = cat === 'all' ? 'Tất cả tranh mẫu' : btn.querySelector('.category-tab-label')?.textContent ?? '';
+          sectionTitle.textContent = `${label} (${count} tranh)`;
+        }
+      });
+
+      // WAI-ARIA arrow key navigation across tablist
+      btn.addEventListener('keydown', (e) => {
+        let targetIdx: number | null = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          targetIdx = (idx + 1) % categoryBtns.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          targetIdx = (idx - 1 + categoryBtns.length) % categoryBtns.length;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          targetIdx = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          targetIdx = categoryBtns.length - 1;
+        }
+
+        if (targetIdx !== null) {
+          const targetBtn = categoryBtns[targetIdx];
+          targetBtn.focus();
+          targetBtn.click();
+        }
       });
     });
 
@@ -320,9 +374,18 @@ export class PictureModalView {
       btn.addEventListener('click', () => {
         const presetId = btn.dataset.presetId;
         if (presetId) {
-          presetCards.forEach((b) => b.classList.remove('active'));
+          presetCards.forEach((b) => {
+            b.classList.remove('active');
+            b.setAttribute('aria-pressed', 'false');
+          });
           btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
           this.hasCustomSelected = false;
+
+          if (customBadge) customBadge.style.display = 'none';
+          uploadBox?.classList.remove('custom-active');
+          if (customError) customError.style.display = 'none';
+
           this.options.onSelectPreset(presetId);
           const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');
           if (previewImg) {
@@ -334,13 +397,45 @@ export class PictureModalView {
 
     // Custom upload
     const fileInput = this.modalEl.querySelector<HTMLInputElement>('#custom-image-file-input');
+    const uploadLabel = this.modalEl.querySelector<HTMLLabelElement>('.btn-upload-image');
+
+    // Space/Enter activation for custom upload label
+    uploadLabel?.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        fileInput?.click();
+      }
+    });
+
     fileInput?.addEventListener('change', async () => {
       const file = fileInput.files?.[0];
+      if (customError) {
+        customError.textContent = '';
+        customError.style.display = 'none';
+      }
+
       if (file) {
+        // Enforce maximum 15MB file size
+        if (file.size > 15 * 1024 * 1024) {
+          if (customError) {
+            customError.textContent = 'Ảnh quá lớn (tối đa 15MB). Vui lòng chọn ảnh dung lượng nhỏ hơn.';
+            customError.style.display = 'block';
+          }
+          fileInput.value = '';
+          return;
+        }
+
         try {
           const optimizedDataUrl = await processCustomImageFile(file);
-          presetCards.forEach((b) => b.classList.remove('active'));
+          presetCards.forEach((b) => {
+            b.classList.remove('active');
+            b.setAttribute('aria-pressed', 'false');
+          });
           this.hasCustomSelected = true;
+
+          if (customBadge) customBadge.style.display = 'flex';
+          uploadBox?.classList.add('custom-active');
+
           this.options.onUploadCustom(optimizedDataUrl);
           const previewImg = this.modalEl?.querySelector<HTMLImageElement>('#main-preview-img');
           if (previewImg) {
@@ -348,6 +443,10 @@ export class PictureModalView {
           }
         } catch (err) {
           console.error('Failed to process custom image:', err);
+          if (customError) {
+            customError.textContent = 'Không thể xử lý hình ảnh này. Vui lòng thử ảnh khác.';
+            customError.style.display = 'block';
+          }
         } finally {
           fileInput.value = '';
         }

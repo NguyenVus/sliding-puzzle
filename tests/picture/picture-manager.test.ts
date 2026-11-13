@@ -52,6 +52,28 @@ describe('PictureManager', () => {
     }
   });
 
+  it('ensures all 10 preset SVGs are well-formed valid XML documents without parser errors', () => {
+    const presets = manager.getPresets();
+    const parser = new DOMParser();
+
+    for (const preset of presets) {
+      expect(preset.url.startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true);
+      const rawSvg = decodeURIComponent(preset.url.replace('data:image/svg+xml;charset=utf-8,', ''));
+      expect(rawSvg).toContain('<svg');
+      expect(rawSvg).toContain('</svg>');
+
+      const doc = parser.parseFromString(rawSvg, 'image/svg+xml');
+      const parserErrors = doc.querySelectorAll('parsererror');
+      expect(parserErrors.length).toBe(0);
+
+      const svgEl = doc.querySelector('svg');
+      expect(svgEl).not.toBeNull();
+      expect(svgEl?.getAttribute('viewBox')).toBe('0 0 600 600');
+      expect(svgEl?.getAttribute('width')).toBe('600');
+      expect(svgEl?.getAttribute('height')).toBe('600');
+    }
+  });
+
   it('selects newly added presets such as cat and starry night', () => {
     manager.selectPreset('preset-cat');
     expect(manager.getActivePresetId()).toBe('preset-cat');
@@ -60,6 +82,13 @@ describe('PictureManager', () => {
     manager.selectPreset('preset-starry');
     expect(manager.getActivePresetId()).toBe('preset-starry');
     expect(manager.getActivePictureUrl()).toContain('data:image/svg+xml');
+  });
+
+  it('safely falls back to default preset if storage contains unknown preset ID', () => {
+    storage.updateSettings({ selectedPictureId: 'corrupted-nonexistent-id' });
+    const safeManager = new PictureManager(storage);
+    expect(safeManager.getActivePresetId()).toBe('preset-fuji');
+    expect(safeManager.getActivePictureUrl()).toContain('data:image/svg+xml');
   });
 
   it('toggles picture mode on and off and persists to storage', () => {

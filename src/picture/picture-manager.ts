@@ -22,7 +22,8 @@ export class PictureManager {
       this.isPictureModeEnabled = settings.pictureModeEnabled ?? false;
       this.showNumbersInPicture = settings.pictureNumbersEnabled;
       if (settings.selectedPictureId) {
-        this.activePresetId = settings.selectedPictureId;
+        const isValid = DEFAULT_PICTURE_PRESETS.some((p) => p.id === settings.selectedPictureId);
+        this.activePresetId = isValid ? settings.selectedPictureId : DEFAULT_PICTURE_PRESETS[0].id;
       }
     }
   }
@@ -72,7 +73,8 @@ export class PictureManager {
   }
 
   public getActivePresetId(): string {
-    return this.activePresetId;
+    const isValid = DEFAULT_PICTURE_PRESETS.some((p) => p.id === this.activePresetId);
+    return isValid ? this.activePresetId : DEFAULT_PICTURE_PRESETS[0].id;
   }
 
   public selectPreset(presetId: string): void {
